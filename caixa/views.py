@@ -819,7 +819,8 @@ def adicionar_combo_pedido(request):
             return JsonResponse({
                 'success': True,
                 'combo': {
-                    'id': combo.id,
+                    'produto_id': combo.produto.id,  # ID do produto, não do combo
+                    'combo_id': combo.id,  # ID do combo para referência
                     'nome': combo.produto.nome,
                     'preco': float(combo.produto.preco),
                     'escolhas': escolhas_detalhes

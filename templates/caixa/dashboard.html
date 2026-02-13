@@ -7527,7 +7527,7 @@ async function confirmarSelecaoCombo() {
 function adicionarComboAoCarrinho(combo) {
     // Adicionar combo ao array de itens do pedido
     itensPedido.push({
-        produto_id: combo.id,
+        produto_id: combo.produto_id,  // ID do produto, não do combo
         nome: combo.nome,
         preco: parseFloat(combo.preco),
         quantidade: 1,
