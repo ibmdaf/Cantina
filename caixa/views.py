@@ -179,9 +179,16 @@ def criar_pedido(request):
                 # Se for combo, processar escolhas e abater estoque
                 if item.get('is_combo') and item.get('escolhas'):
                     for escolha in item['escolhas']:
-                        # Criar registro de escolha
-                        slot = ComboSlot.objects.get(id=escolha['slot_id'])
-                        produto_escolhido = Produto.objects.get(id=escolha['produto_id'])
+                        try:
+                            # Criar registro de escolha
+                            slot = ComboSlot.objects.get(id=escolha['slot_id'])
+                            produto_escolhido = Produto.objects.get(id=escolha['produto_id'])
+                        except (ComboSlot.DoesNotExist, Produto.DoesNotExist):
+                            pedido.delete()  # Deletar pedido criado
+                            return JsonResponse({
+                                'success': False,
+                                'error': f'Item do combo não encontrado (Slot ID: {escolha.get("slot_id")}, Produto ID: {escolha.get("produto_id")}). Por favor, atualize a página.'
+                            })
                         
                         PedidoComboEscolha.objects.create(
                             item_pedido=item_pedido,
@@ -785,9 +792,15 @@ def adicionar_combo_pedido(request):
             # Retornar dados para adicionar ao carrinho (o abate de estoque será feito ao finalizar o pedido)
             escolhas_detalhes = []
             for escolha in escolhas:
-                slot = ComboSlot.objects.get(id=escolha['slot_id'])
-                produto = Produto.objects.get(id=escolha['produto_id'])
-                item = ComboSlotItem.objects.get(slot=slot, produto=produto)
+                try:
+                    slot = ComboSlot.objects.get(id=escolha['slot_id'])
+                    produto = Produto.objects.get(id=escolha['produto_id'])
+                    item = ComboSlotItem.objects.get(slot=slot, produto=produto)
+                except (ComboSlot.DoesNotExist, Produto.DoesNotExist, ComboSlotItem.DoesNotExist) as e:
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'Item do combo não encontrado. Por favor, atualize a página.'
+                    })
                 
                 escolhas_detalhes.append({
                     'slot_id': slot.id,
