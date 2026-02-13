@@ -121,6 +121,12 @@ def criar_pedido(request):
             data = json.loads(request.body)
             empresa = request.user.empresa
             
+            # DEBUG: Log dos dados recebidos
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'=== CRIAR PEDIDO DEBUG ===')
+            logger.error(f'Itens recebidos: {data.get("itens", [])}')
+            
             # Validação 1: Verificar se há itens
             itens = data.get('itens', [])
             if not itens or len(itens) == 0:
