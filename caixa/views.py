@@ -1037,6 +1037,22 @@ def excluir_produto(request, produto_id):
                     'error': f'Não é possível excluir este produto pois ele está em {itens_ativos} pedido(s) ativo(s).'
                 })
             
+            # Verificar se o produto está sendo usado em combos
+            from caixa.models import ComboSlotItem
+            combos_usando = ComboSlotItem.objects.filter(produto=produto).select_related('slot__combo__produto')
+            
+            if combos_usando.exists():
+                nomes_combos = ', '.join([item.slot.combo.produto.nome for item in combos_usando[:3]])
+                total_combos = combos_usando.count()
+                
+                if total_combos > 3:
+                    nomes_combos += f' e mais {total_combos - 3}'
+                
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Não é possível excluir este produto pois ele está sendo usado nos combos: {nomes_combos}. Remova o produto dos combos primeiro.'
+                })
+            
             # Verificar se é um combo e tem slots
             if hasattr(produto, 'combo'):
                 # Excluir slots e itens do combo (cascade)
