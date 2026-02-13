@@ -22,7 +22,7 @@
                     </div>
 
                     <div class="busca-produto">
-                        <input type="text" id="busca-item" class="form-control" placeholder="🔍 Buscar item por nome ou código...">
+                        <input type="text" id="busca-item" class="form-control" placeholder="🔍 Buscar item por nome ou código..." autocomplete="off">
                     </div>
 
                     <div class="produtos-cardapio-grid">
@@ -53,7 +53,7 @@
 
                     <div class="form-group">
                         <label class="form-label">👤 Nome do Cliente</label>
-                        <input type="text" id="cliente-nome" class="form-control" placeholder="Digite o nome do cliente...">
+                        <input type="text" id="cliente-nome" class="form-control" placeholder="Digite o nome do cliente..." autocomplete="off">
                     </div>
 
                     <div class="form-row">
@@ -113,7 +113,7 @@
             <h2 class="page-title">📋 Cardápio do Dia</h2>
             
             <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center;">
-                <input type="text" id="busca-cardapio-caixa" class="form-control" placeholder="🔍 Buscar produto..." style="max-width: 400px;">
+                <input type="text" id="busca-cardapio-caixa" class="form-control" placeholder="🔍 Buscar produto..." style="max-width: 400px;" autocomplete="off">
                 <span id="contador-disponiveis" style="color: var(--text-secondary); font-size: 0.9rem; margin-left: auto;">
                     <span style="color: var(--btn-primary); font-weight: 600;" id="total-disponiveis">0</span> itens disponíveis
                 </span>
@@ -816,7 +816,7 @@
             <div class="modal-produto-coluna-esquerda">
                 <div class="form-group">
                     <label class="form-label">🍽️ Nome do Produto</label>
-                    <input type="text" id="produto-nome" class="form-control" placeholder="Ex: X-Burger, Café Expresso..." required>
+                    <input type="text" id="produto-nome" class="form-control" placeholder="Ex: X-Burger, Café Expresso..." required autocomplete="off">
                 </div>
                 
                 <div class="form-row-inline">
@@ -894,7 +894,7 @@
                 
                 <div class="form-group" style="margin-bottom: 0.6rem;">
                     <label class="form-label" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Nome da Categoria</label>
-                    <input type="text" id="nova-categoria-nome" class="form-control" placeholder="Ex: Lanches, Bebidas..." style="margin: 0; font-size: 0.9rem; padding: 0.5rem;">
+                    <input type="text" id="nova-categoria-nome" class="form-control" placeholder="Ex: Lanches, Bebidas..." style="margin: 0; font-size: 0.9rem; padding: 0.5rem;" autocomplete="off">
                 </div>
                 
                 <div class="form-group" style="margin-bottom: 0.6rem;">
@@ -991,7 +991,7 @@
                 
                 <div class="form-group">
                     <label class="form-label">🍽️ Nome do Combo</label>
-                    <input type="text" id="combo-nome" class="form-control" placeholder="Ex: Combo Pastel, Combo Super..." required>
+                    <input type="text" id="combo-nome" class="form-control" placeholder="Ex: Combo Pastel, Combo Super..." required autocomplete="off">
                 </div>
                 
                 <div class="form-group">
@@ -1067,7 +1067,7 @@
             <div style="margin-bottom: 1rem;">
                 <input type="text" id="busca-produto-slot" placeholder="🔍 Buscar produto..." 
                        style="width: 100%; padding: 0.8rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-primary); color: var(--text-primary);"
-                       oninput="filtrarProdutosSlot()">
+                       oninput="filtrarProdutosSlot()" autocomplete="off">
             </div>
             
             <!-- Lista de Produtos -->
