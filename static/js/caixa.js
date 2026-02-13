@@ -1,6 +1,7 @@
 let itensPedido = [];
 
 function adicionarProduto(id, nome, preco) {
+    console.log('adicionarProduto chamado:', {id, nome, preco});
     const itemExistente = itensPedido.find(item => item.produto_id === id);
     
     if (itemExistente) {
@@ -15,6 +16,7 @@ function adicionarProduto(id, nome, preco) {
         });
     }
     
+    console.log('itensPedido após adicionar:', itensPedido);
     atualizarListaItens();
 }
 
