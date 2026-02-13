@@ -195,9 +195,8 @@ def criar_pedido(request):
                         produto_escolhido.save()
                 else:
                     # Produto normal - abater estoque
-                    if produto.quantidade_estoque > 0:
-                        produto.quantidade_estoque -= item['quantidade']
-                        produto.save()
+                    produto.quantidade_estoque -= item['quantidade']
+                    produto.save()
             
             pedido.total = total
             pedido.save()
