@@ -5717,13 +5717,13 @@ async function alterarStatusPedido(selectElement) {
                 }, 2000);
             }
         } else {
-            showToast('Erro ao alterar status: ' + (result.error || 'Erro desconhecido'));
+            alert('Erro ao alterar status: ' + (result.error || 'Erro desconhecido'));
             // Reverter seleção
             location.reload();
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('Erro ao alterar status do pedido!', 'error');
+        alert('Erro ao alterar status do pedido!');
         location.reload();
     }
 }
@@ -5733,7 +5733,7 @@ async function salvarNomeSistema() {
     const emoji = document.getElementById('config-emoji-sistema').value.trim();
     
     if (!nome) {
-        showToast('Por favor, informe um nome para o sistema!', 'info');
+        alert('Por favor, informe um nome para o sistema!');
         return;
     }
     
@@ -5753,15 +5753,15 @@ async function salvarNomeSistema() {
         const result = await response.json();
         
         if (result.success) {
-            showToast('Configurações salvas com sucesso!', 'success');
+            alert('Configurações salvas com sucesso!');
             // Atualizar o logo no header
             document.querySelector('.logo').textContent = (emoji || '🍽️') + ' ' + nome;
         } else {
-            showToast('Erro ao salvar configurações: ' + (result.error || 'Erro desconhecido'));
+            alert('Erro ao salvar configurações: ' + (result.error || 'Erro desconhecido'));
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('Erro ao salvar configurações!', 'error');
+        alert('Erro ao salvar configurações!');
     }
 }
 
@@ -5835,13 +5835,13 @@ async function atualizarDisponibilidade(checkbox) {
             // Atualizar contador de itens disponíveis
             atualizarContadorDisponiveis();
         } else {
-            showToast('Erro ao atualizar disponibilidade: ' + (result.error || 'Erro desconhecido'));
+            alert('Erro ao atualizar disponibilidade: ' + (result.error || 'Erro desconhecido'));
             // Reverter checkbox
             checkbox.checked = !disponivel;
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('Erro ao atualizar disponibilidade!', 'error');
+        alert('Erro ao atualizar disponibilidade!');
         // Reverter checkbox
         checkbox.checked = !disponivel;
     }
@@ -5955,7 +5955,7 @@ async function abrirModalEditar(pedidoId) {
         const pedido = await response.json();
         
         if (!pedido.success) {
-            showToast('Erro ao carregar pedido!', 'error');
+            alert('Erro ao carregar pedido!');
             return;
         }
         
@@ -5985,7 +5985,7 @@ async function abrirModalEditar(pedidoId) {
         
     } catch (error) {
         console.error('Erro ao abrir modal de edição:', error);
-        showToast('Erro ao carregar dados do pedido!', 'error');
+        alert('Erro ao carregar dados do pedido!');
     }
 }
 
@@ -6113,14 +6113,14 @@ function configurarBuscaProdutosEdicao() {
 async function salvarEdicaoPedido() {
     // Validação 1: Verificar se há itens no carrinho
     if (itensEdicao.length === 0) {
-        showToast('❌ Adicione pelo menos um item ao pedido!', 'error');
+        alert('❌ Adicione pelo menos um item ao pedido!');
         return;
     }
     
     // Validação 2: Verificar nome do cliente
     const clienteNome = document.getElementById('edit-cliente-nome').value.trim();
     if (!clienteNome) {
-        showToast('❌ Por favor, informe o nome do cliente!', 'error');
+        alert('❌ Por favor, informe o nome do cliente!');
         document.getElementById('edit-cliente-nome').focus();
         return;
     }
@@ -6128,7 +6128,7 @@ async function salvarEdicaoPedido() {
     // Validação 3: Verificar forma de pagamento
     const formaPagamento = document.getElementById('edit-forma-pagamento').value;
     if (!formaPagamento) {
-        showToast('❌ Por favor, selecione uma forma de pagamento!', 'error');
+        alert('❌ Por favor, selecione uma forma de pagamento!');
         document.getElementById('edit-forma-pagamento').focus();
         return;
     }
@@ -6155,15 +6155,15 @@ async function salvarEdicaoPedido() {
         const result = await response.json();
         
         if (result.success) {
-            showToast('✅ Pedido atualizado com sucesso!', 'success');
+            alert('✅ Pedido atualizado com sucesso!');
             fecharModalEditar();
             location.reload();
         } else {
-            showToast('❌ Erro ao atualizar pedido: ' + (result.error || 'Erro desconhecido'));
+            alert('❌ Erro ao atualizar pedido: ' + (result.error || 'Erro desconhecido'));
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('❌ Erro ao atualizar pedido! Verifique sua conexão.', 'error');
+        alert('❌ Erro ao atualizar pedido! Verifique sua conexão.');
     }
 }
 
@@ -6409,7 +6409,7 @@ async function salvarEdicaoCategoria(categoriaId) {
     const novoNome = nomeInput.value.trim();
     
     if (!novoNome) {
-        showToast('O nome da categoria não pode estar vazio!', 'error');
+        alert('O nome da categoria não pode estar vazio!');
         return;
     }
     
@@ -6448,11 +6448,11 @@ async function salvarEdicaoCategoria(categoriaId) {
             
             cancelarEdicaoCategoria(categoriaId);
         } else {
-            showToast('Erro ao editar categoria: ' + data.error);
+            alert('Erro ao editar categoria: ' + data.error);
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('Erro ao editar categoria!', 'error');
+        alert('Erro ao editar categoria!');
     }
 }
 
@@ -6524,11 +6524,11 @@ async function selecionarEmojiCategoria(categoriaId, emoji) {
             if (selector) selector.remove();
             emojiSelectorAberto = null;
         } else {
-            showToast('Erro ao atualizar emoji: ' + data.error);
+            alert('Erro ao atualizar emoji: ' + data.error);
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('Erro ao atualizar emoji!', 'error');
+        alert('Erro ao atualizar emoji!');
     }
 }
 
@@ -6537,7 +6537,7 @@ async function salvarNovaCategoria() {
     const emoji = document.getElementById('nova-categoria-emoji').value;
     
     if (!nome) {
-        showToast('Por favor, informe o nome da categoria!', 'info');
+        alert('Por favor, informe o nome da categoria!');
         return;
     }
     
@@ -6558,11 +6558,11 @@ async function salvarNovaCategoria() {
             document.getElementById('nova-categoria-emoji').value = '🍽️';
             await carregarCategorias();
         } else {
-            showToast('Erro ao criar categoria: ' + data.error);
+            alert('Erro ao criar categoria: ' + data.error);
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('Erro ao criar categoria!', 'error');
+        alert('Erro ao criar categoria!');
     }
 }
 
@@ -6584,11 +6584,11 @@ async function excluirCategoria(categoriaId) {
         if (data.success) {
             await carregarCategorias();
         } else {
-            showToast('Erro ao excluir categoria: ' + data.error);
+            alert('Erro ao excluir categoria: ' + data.error);
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('Erro ao excluir categoria!', 'error');
+        alert('Erro ao excluir categoria!');
     }
 }
 
@@ -6661,14 +6661,14 @@ async function toggleAtivarItem(produtoId, estaAtivo) {
         const data = await response.json();
         
         if (data.success) {
-            showToast(`✅ Item ${acao === 'inativar' ? 'inativado' : 'ativado'} com sucesso!`, 'success');
+            alert(`✅ Item ${acao === 'inativar' ? 'inativado' : 'ativado'} com sucesso!`);
             location.reload();
         } else {
-            showToast('❌ Erro: ' + (data.error || 'Erro desconhecido'));
+            alert('❌ Erro: ' + (data.error || 'Erro desconhecido'));
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('❌ Erro ao alterar status do item!', 'error');
+        alert('❌ Erro ao alterar status do item!');
     }
 }
 
@@ -6709,11 +6709,11 @@ async function editarItem(produtoId) {
                 abrirModalProduto(produtoId);
             }
         } else {
-            showToast('❌ Erro ao carregar item: ' + (data.error || 'Erro desconhecido'));
+            alert('❌ Erro ao carregar item: ' + (data.error || 'Erro desconhecido'));
         }
     } catch (error) {
         console.error('Erro ao editar item:', error);
-        showToast('❌ Erro ao carregar item! Verifique sua conexão.', 'error');
+        alert('❌ Erro ao carregar item! Verifique sua conexão.');
     }
 }
 
@@ -6793,11 +6793,11 @@ async function carregarDadosProduto(produtoId) {
                 preview.innerHTML = `<img src="${produto.imagem}" alt="${produto.nome}">`;
             }
         } else {
-            showToast('❌ Erro ao carregar produto: ' + (data.error || 'Erro desconhecido'));
+            alert('❌ Erro ao carregar produto: ' + (data.error || 'Erro desconhecido'));
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('❌ Erro ao carregar produto! Verifique sua conexão.', 'error');
+        alert('❌ Erro ao carregar produto! Verifique sua conexão.');
     }
 }
 
@@ -6806,14 +6806,14 @@ function previewImagemProduto(event) {
     if (file) {
         // Validar tamanho (5MB)
         if (file.size > 5 * 1024 * 1024) {
-            showToast('❌ Imagem muito grande! Tamanho máximo: 5MB', 'error');
+            alert('❌ Imagem muito grande! Tamanho máximo: 5MB');
             event.target.value = '';
             return;
         }
         
         // Validar tipo
         if (!file.type.startsWith('image/')) {
-            showToast('❌ Arquivo inválido! Selecione uma imagem.', 'error');
+            alert('❌ Arquivo inválido! Selecione uma imagem.');
             event.target.value = '';
             return;
         }
@@ -6835,19 +6835,19 @@ async function salvarProduto() {
     const categoria = document.getElementById('produto-categoria').value;
     
     if (!nome) {
-        showToast('⚠️ Por favor, preencha o nome do produto!', 'info');
+        alert('⚠️ Por favor, preencha o nome do produto!');
         document.getElementById('produto-nome').focus();
         return;
     }
     
     if (!preco || parseFloat(preco) <= 0) {
-        showToast('⚠️ Por favor, informe um preço válido!', 'info');
+        alert('⚠️ Por favor, informe um preço válido!');
         document.getElementById('produto-preco').focus();
         return;
     }
     
     if (!categoria) {
-        showToast('⚠️ Por favor, selecione uma categoria para o produto!', 'info');
+        alert('⚠️ Por favor, selecione uma categoria para o produto!');
         document.getElementById('produto-categoria').focus();
         return;
     }
@@ -6891,11 +6891,11 @@ async function salvarProduto() {
             fecharModalProduto();
             location.reload();
         } else {
-            showToast('❌ Erro ao salvar produto: ' + (result.error || 'Erro desconhecido'));
+            alert('❌ Erro ao salvar produto: ' + (result.error || 'Erro desconhecido'));
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('❌ Erro ao salvar produto! Verifique sua conexão.', 'error');
+        alert('❌ Erro ao salvar produto! Verifique sua conexão.');
     }
 }
 
@@ -7031,7 +7031,7 @@ async function carregarDadosCombo(produtoId) {
         }
     } catch (error) {
         console.error('Erro ao carregar combo:', error);
-        showToast('Erro ao carregar dados do combo', 'error');
+        alert('Erro ao carregar dados do combo');
     }
 }
 
@@ -7212,17 +7212,17 @@ async function salvarCombo() {
         
         // Validações
         if (!nome) {
-            showToast('Nome do combo é obrigatório', 'error');
+            alert('Nome do combo é obrigatório');
             return;
         }
         
         if (!preco || parseFloat(preco) <= 0) {
-            showToast('Preço do combo é obrigatório e deve ser maior que zero', 'error');
+            alert('Preço do combo é obrigatório e deve ser maior que zero');
             return;
         }
         
         if (comboSlots.length === 0) {
-            showToast('Adicione pelo menos um slot ao combo', 'error');
+            alert('Adicione pelo menos um slot ao combo');
             return;
         }
         
@@ -7230,11 +7230,11 @@ async function salvarCombo() {
         for (let i = 0; i < comboSlots.length; i++) {
             const slot = comboSlots[i];
             if (!slot.nome.trim()) {
-                showToast(`Slot ${i + 1} precisa de um nome`, 'error');
+                alert(`Slot ${i + 1} precisa de um nome`);
                 return;
             }
             if (slot.itens.length === 0) {
-                showToast(`Slot "${slot.nome}" precisa ter pelo menos um item vinculado`, 'error');
+                alert(`Slot "${slot.nome}" precisa ter pelo menos um item vinculado`);
                 return;
             }
         }
@@ -7261,7 +7261,7 @@ async function salvarCombo() {
             
             const produtoData = await produtoResponse.json();
             if (!produtoData.success) {
-                showToast('Erro ao criar produto: ' + produtoData.error);
+                alert('Erro ao criar produto: ' + produtoData.error);
                 return;
             }
             
@@ -7284,15 +7284,15 @@ async function salvarCombo() {
         const result = await response.json();
         
         if (result.success) {
-            showToast('✅ Combo salvo com sucesso!', 'success');
+            alert('✅ Combo salvo com sucesso!');
             fecharModalCombo();
             location.reload();
         } else {
-            showToast('❌ Erro ao salvar combo: ' + (result.error || 'Erro desconhecido'));
+            alert('❌ Erro ao salvar combo: ' + (result.error || 'Erro desconhecido'));
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('❌ Erro ao salvar combo! Verifique sua conexão.', 'error');
+        alert('❌ Erro ao salvar combo! Verifique sua conexão.');
     }
 }
 
@@ -7341,11 +7341,11 @@ async function abrirModalSelecaoCombo(comboId, comboNome, comboPreco) {
             modal.style.display = 'block';
         } else {
             console.error('Erro na resposta:', data.error);
-            showToast('Erro ao carregar opções do combo: ' + data.error);
+            alert('Erro ao carregar opções do combo: ' + data.error);
         }
     } catch (error) {
         console.error('Erro ao carregar combo:', error);
-        showToast('Erro ao carregar combo!', 'error');
+        alert('Erro ao carregar combo!');
     }
 }
 
@@ -7453,7 +7453,7 @@ function renderizarSlotsSelecao(slots) {
 function selecionarOpcaoCombo(slotId, produtoId, produtoNome, quantidadeAbate, podeSelecionar) {
     // Verificar se pode selecionar (produto ativo e com estoque)
     if (!podeSelecionar) {
-        showToast('Este item não está disponível (produto inativo ou sem estoque)!', 'error');
+        alert('Este item não está disponível (produto inativo ou sem estoque)!');
         return;
     }
     
@@ -7484,7 +7484,7 @@ async function confirmarSelecaoCombo() {
     const escolhasFeitas = Object.keys(escolhasCombo).length;
     
     if (escolhasFeitas < totalSlots) {
-        showToast(`Por favor, selecione um item para todos os slots (${escolhasFeitas}/${totalSlots})`, 'info');
+        alert(`Por favor, selecione um item para todos os slots (${escolhasFeitas}/${totalSlots})`);
         return;
     }
     
@@ -7509,11 +7509,11 @@ async function confirmarSelecaoCombo() {
             adicionarComboAoCarrinho(result.combo);
             fecharModalSelecaoCombo();
         } else {
-            showToast('Erro ao adicionar combo: ' + result.error);
+            alert('Erro ao adicionar combo: ' + result.error);
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('Erro ao adicionar combo ao pedido!', 'error');
+        alert('Erro ao adicionar combo ao pedido!');
     }
 }
 
@@ -7629,11 +7629,11 @@ async function abrirModalEditarUsuario(usuarioId) {
             
             modal.style.display = 'block';
         } else {
-            showToast('Erro ao carregar usuário: ' + (data.error || 'Erro desconhecido'));
+            alert('Erro ao carregar usuário: ' + (data.error || 'Erro desconhecido'));
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('Erro ao carregar dados do usuário', 'error');
+        alert('Erro ao carregar dados do usuário');
     }
 }
 
@@ -7652,7 +7652,7 @@ async function salvarUsuario() {
     const senha = document.getElementById('usuario-senha').value;
     
     if (!username) {
-        showToast('Nome de usuário é obrigatório', 'error');
+        alert('Nome de usuário é obrigatório');
         return;
     }
     
@@ -7676,15 +7676,15 @@ async function salvarUsuario() {
         const data = await response.json();
         
         if (data.success) {
-            showToast('✅ Usuário atualizado com sucesso!', 'success');
+            alert('✅ Usuário atualizado com sucesso!');
             fecharModalEditarUsuario();
             location.reload();
         } else {
-            showToast('❌ Erro: ' + (data.error || 'Erro desconhecido'));
+            alert('❌ Erro: ' + (data.error || 'Erro desconhecido'));
         }
     } catch (error) {
         console.error('Erro:', error);
-        showToast('❌ Erro ao salvar usuário', 'error');
+        alert('❌ Erro ao salvar usuário');
     }
 }
 
@@ -7733,7 +7733,7 @@ async function carregarRelatorios() {
             dataFim = document.getElementById('data-fim').value;
             
             if (!dataInicio || !dataFim) {
-                showToast('Por favor, selecione as datas de início e fim', 'info');
+                alert('Por favor, selecione as datas de início e fim');
                 return;
             }
         }
@@ -7883,12 +7883,12 @@ function renderizarHistorico(pedidos) {
 
 // Exportar PDF (placeholder)
 function exportarPDF() {
-    showToast('Funcionalidade de exportação PDF em desenvolvimento', 'info');
+    alert('Funcionalidade de exportação PDF em desenvolvimento');
 }
 
 // Exportar Excel (placeholder)
 function exportarExcel() {
-    showToast('Funcionalidade de exportação Excel em desenvolvimento', 'info');
+    alert('Funcionalidade de exportação Excel em desenvolvimento');
 }
 
 // Iniciar atualização automática

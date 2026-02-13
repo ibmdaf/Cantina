@@ -19,10 +19,14 @@ def caixa_dashboard(request, aba='novo-pedido'):
     
     empresa = request.user.empresa
     categorias = Categoria.objects.filter(empresa=empresa, ativo=True)
+    
     # Mostrar todos os produtos na aba "Cardápio do Dia" para gerenciar disponibilidade
-    todos_produtos = Produto.objects.filter(empresa=empresa).order_by('nome')
+    todos_produtos_raw = Produto.objects.filter(empresa=empresa).select_related('categoria')
+    todos_produtos = ordenar_produtos_customizado(todos_produtos_raw)
+    
     # Apenas produtos ativos para venda na aba "Novo Pedido"
-    produtos_disponiveis = Produto.objects.filter(empresa=empresa, ativo=True).order_by('nome')
+    produtos_disponiveis_raw = Produto.objects.filter(empresa=empresa, ativo=True).select_related('categoria')
+    produtos_disponiveis = ordenar_produtos_customizado(produtos_disponiveis_raw)
     
     # PADRONIZADO: Mesma query da cozinha (pendente, preparando, pronto)
     pedidos_abertos = Pedido.objects.filter(
@@ -77,6 +81,38 @@ def caixa_dashboard(request, aba='novo-pedido'):
     response['Expires'] = '0'
     
     return response
+
+
+def ordenar_produtos_customizado(produtos_queryset):
+    """
+    Ordena produtos: Combos primeiro, Bebidas penúltimo, Sobremesas último.
+    Dentro de cada grupo, ordena alfabeticamente por nome.
+    """
+    produtos_combo = []
+    produtos_outros = []
+    produtos_bebidas = []
+    produtos_sobremesas = []
+    
+    for produto in produtos_queryset:
+        categoria_nome = produto.categoria.nome.lower() if produto.categoria else ''
+        
+        if produto.categoria and produto.categoria.is_sistema:  # Combo
+            produtos_combo.append(produto)
+        elif 'sobremesa' in categoria_nome:
+            produtos_sobremesas.append(produto)
+        elif 'bebida' in categoria_nome:
+            produtos_bebidas.append(produto)
+        else:
+            produtos_outros.append(produto)
+    
+    # Ordenar cada grupo por nome
+    produtos_combo.sort(key=lambda p: p.nome)
+    produtos_outros.sort(key=lambda p: p.nome)
+    produtos_bebidas.sort(key=lambda p: p.nome)
+    produtos_sobremesas.sort(key=lambda p: p.nome)
+    
+    # Concatenar na ordem desejada
+    return produtos_combo + produtos_outros + produtos_bebidas + produtos_sobremesas
 
 @login_required
 def criar_pedido(request):
@@ -827,6 +863,7 @@ def criar_categoria(request):
             if Categoria.objects.filter(empresa=request.user.empresa, nome=nome).exists():
                 return JsonResponse({'success': False, 'error': 'Já existe uma categoria com este nome'})
             
+            # Criar nova categoria
             categoria = Categoria.objects.create(
                 empresa=request.user.empresa,
                 nome=nome,
@@ -851,7 +888,7 @@ def criar_categoria(request):
 @login_required
 def excluir_categoria(request, categoria_id):
     """
-    Exclui uma categoria (soft delete).
+    Exclui uma categoria permanentemente.
     """
     if request.method == 'DELETE':
         try:
@@ -873,11 +910,14 @@ def excluir_categoria(request, categoria_id):
                     'error': f'Não é possível excluir. Existem {produtos_count} produto(s) usando esta categoria.'
                 })
             
-            # Soft delete
-            categoria.ativo = False
-            categoria.save()
+            # Hard delete (exclusão permanente)
+            nome_categoria = categoria.nome
+            categoria.delete()
             
-            return JsonResponse({'success': True})
+            return JsonResponse({
+                'success': True,
+                'message': f'Categoria "{nome_categoria}" excluída permanentemente.'
+            })
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     
@@ -1055,8 +1095,26 @@ def excluir_produto(request, produto_id):
             
             # Verificar se é um combo e tem slots
             if hasattr(produto, 'combo'):
-                # Excluir slots e itens do combo (cascade)
-                produto.combo.delete()
+                combo = produto.combo
+                
+                # Verificar se o combo está em pedidos ativos
+                from caixa.models import PedidoComboEscolha
+                escolhas_ativas = PedidoComboEscolha.objects.filter(
+                    slot__combo=combo,
+                    item_pedido__pedido__status__in=['pendente', 'preparando', 'pronto']
+                ).count()
+                
+                if escolhas_ativas > 0:
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'Não é possível excluir este combo pois ele está em {escolhas_ativas} pedido(s) ativo(s).'
+                    })
+                
+                # Deletar escolhas de combos antigos (pedidos finalizados/cancelados)
+                PedidoComboEscolha.objects.filter(slot__combo=combo).delete()
+                
+                # Agora pode excluir o combo (cascade para slots e itens)
+                combo.delete()
             
             nome_produto = produto.nome
             produto.delete()
