@@ -21,8 +21,14 @@
                         <span class="items-count">{{ produtos.count }} itens</span>
                     </div>
 
-                    <div class="busca-produto">
-                        <input type="text" id="busca-item" class="form-control" placeholder="🔍 Buscar item por nome ou código..." autocomplete="off">
+                    <div class="busca-produto" style="display: flex; gap: 0.8rem; align-items: center;">
+                        <input type="text" id="busca-item" class="form-control" placeholder="🔍 Buscar item por nome ou código..." autocomplete="off" oninput="filtrarCardapio()" style="flex: 1;">
+                        <select id="filtro-categoria-cardapio" class="form-control" onchange="filtrarCardapio()" style="width: 200px;">
+                            <option value="">Todas as Categorias</option>
+                            {% for categoria in categorias %}
+                            <option value="{{ categoria.nome }}">{{ categoria.emoji }} {{ categoria.nome }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
 
                     <div class="produtos-cardapio-grid">
@@ -30,6 +36,7 @@
                         <div class="produto-card-cardapio" 
                              data-nome="{{ produto.nome|lower }}" 
                              data-codigo="{{ produto.id }}"
+                             data-categoria="{% if produto.categoria %}{{ produto.categoria.nome }}{% endif %}"
                              data-is-combo="{% if produto.is_combo %}true{% else %}false{% endif %}"
                              onclick="{% if produto.is_combo %}abrirModalSelecaoCombo({{ produto.get_combo_id }}, '{{ produto.nome|escapejs }}', {{ produto.preco }}){% else %}adicionarProduto({{ produto.id }}, '{{ produto.nome }}', {{ produto.preco }}){% endif %}">
                             <div class="produto-card-info">
