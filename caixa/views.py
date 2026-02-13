@@ -158,7 +158,15 @@ def criar_pedido(request):
             
             total = Decimal('0.00')
             for item in itens:
-                produto = Produto.objects.get(id=item['produto_id'])
+                try:
+                    produto = Produto.objects.get(id=item['produto_id'])
+                except Produto.DoesNotExist:
+                    pedido.delete()  # Deletar pedido criado
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'Produto com ID {item["produto_id"]} não encontrado. Por favor, atualize a página.'
+                    })
+                
                 item_pedido = ItemPedido.objects.create(
                     pedido=pedido,
                     produto=produto,
