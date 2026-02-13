@@ -1,0 +1,330 @@
+/* SIDEBAR PEDIDOS ATIVOS */
+.pedidos-ativos-sidebar {
+    background: var(--bg-header) !important;
+    border-left: 1px solid var(--border-color) !important;
+    height: calc(100vh - 45px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 0 !important;
+    width: 280px !important;
+    min-width: 280px !important;
+    max-width: 280px !important;
+    flex-shrink: 0 !important;
+}
+
+.pedidos-ativos-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.pedidos-ativos-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.pedidos-ativos-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.pedidos-ativos-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* TÍTULO DA SIDEBAR */
+.sidebar-titulo {
+    background: var(--bg-primary);
+    padding: 0.6rem;
+    border-bottom: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.titulo-icon {
+    font-size: 1.1rem;
+}
+
+.titulo-texto {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: normal;
+}
+
+.titulo-contador {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: normal;
+    margin-left: 0.3rem;
+}
+
+/* ESTATÍSTICAS DO SIDEBAR */
+.sidebar-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.6rem;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 42px;
+    z-index: 9;
+    gap: 0.4rem;
+}
+
+.sidebar-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.sidebar-stat span:first-child {
+    font-size: 0.9rem;
+}
+
+.sidebar-stat span:last-child {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.sidebar-stat.pendente span:last-child {
+    color: #6c757d;
+}
+
+.sidebar-stat.preparando span:last-child {
+    color: #F4A23A;
+}
+
+.sidebar-stat.pronto span:last-child {
+    color: #28a745;
+}
+
+.sidebar-stat.tempo span:last-child {
+    color: var(--btn-primary);
+}
+
+.pedidos-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+/* CARD DE PEDIDO SIMPLIFICADO */
+.pedido-card-simples {
+    background: #2a2a2a;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+}
+
+/* CABEÇALHO DO PEDIDO */
+.pedido-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.65rem;
+}
+
+.pedido-nome-cliente {
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    font-weight: bold;
+}
+
+/* CRONÔMETRO */
+.pedido-cronometro {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--btn-primary);
+    font-size: 1.05rem;
+    font-weight: normal;
+}
+
+.cronometro-icon {
+    font-size: 1.15rem;
+}
+
+.cronometro-tempo {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    letter-spacing: 0.05em;
+    font-weight: normal;
+}
+
+/* META INFORMAÇÕES */
+.pedido-meta-info {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.pedido-meta-separador {
+    color: var(--text-secondary);
+}
+
+/* LISTA DE ITENS */
+.pedido-itens-lista {
+    margin-bottom: 0.65rem;
+}
+
+.pedido-item-linha {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
+    line-height: 1.35;
+}
+
+.item-descricao {
+    flex: 1;
+    color: var(--text-primary);
+    font-weight: normal;
+}
+
+/* Total em laranja */
+.pedido-total-linha .item-descricao {
+    color: var(--btn-primary);
+}
+
+.item-valor {
+    color: var(--text-primary);
+    font-weight: normal;
+    white-space: nowrap;
+    margin-left: 0.9rem;
+}
+
+/* LINHA DO TOTAL */
+.pedido-total-linha {
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.4rem;
+    margin-top: 0.25rem;
+}
+
+.item-valor-total {
+    color: var(--btn-primary);
+    font-weight: normal;
+    white-space: nowrap;
+    margin-left: 0.9rem;
+    font-size: 0.8rem;
+}
+
+/* LINHA DE AÇÕES (SELECT + BOTÕES) */
+.pedido-acoes-linha {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+/* SELECT DE STATUS INLINE */
+.pedido-status-select-inline {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.35rem 0.55rem;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    font-weight: normal;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.45rem center;
+    background-size: 7.5px;
+    padding-right: 1.65rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: background-color 0.3s ease;
+}
+
+.pedido-status-select-inline:hover {
+    opacity: 0.9;
+}
+
+.pedido-status-select-inline:focus {
+    outline: 2px solid var(--btn-primary);
+    outline-offset: 2px;
+}
+
+/* BOTÕES QUADRADOS */
+.btn-acao-quadrado {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #000;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.btn-qr {
+    background: var(--btn-primary);
+    color: var(--btn-text);
+}
+
+.btn-qr:hover {
+    background: var(--btn-hover);
+    transform: scale(1.05);
+}
+
+.btn-editar {
+    background: #007bff;
+    color: white;
+}
+
+.btn-editar:hover {
+    background: #0056b3;
+    transform: scale(1.05);
+}
+
+.btn-cancelar {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-cancelar:hover {
+    background: #c82333;
+    transform: scale(1.05);
+}
+
+.btn-icon-grande {
+    font-size: 0.85rem;
+}
+
+.empty-message {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 3rem 1rem;
+    font-size: 1rem;
+}
+
+/* OBSERVAÇÕES */
+.pedido-observacoes {
+    padding: 0.4rem 0;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    line-height: 1.35;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.5rem;
+}
+
+.obs-label {
+    color: var(--btn-primary);
+    font-weight: normal;
+}
+
+.obs-texto {
+    color: var(--text-secondary);
+    word-wrap: break-word;
+}

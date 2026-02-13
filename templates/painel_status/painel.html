@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Painel de Status - Sistema Cantina{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 style="margin: 2rem 0; color: var(--secondary-color);">📊 Painel de Status Geral</h1>
+    
+    <div class="grid grid-4" style="margin-bottom: 2rem;">
+        <div class="card" style="background: linear-gradient(135deg, #FF6B35 0%, #ff8c5a 100%); color: white;">
+            <h3 style="font-size: 2.5rem; margin-bottom: 0.5rem;">{{ stats.total_pedidos }}</h3>
+            <p style="font-size: 1.1rem;">Pedidos Hoje</p>
+        </div>
+        <div class="card" style="background: linear-gradient(135deg, #28a745 0%, #34ce57 100%); color: white;">
+            <h3 style="font-size: 2.5rem; margin-bottom: 0.5rem;">R$ {{ stats.total_vendas }}</h3>
+            <p style="font-size: 1.1rem;">Vendas Hoje</p>
+        </div>
+        <div class="card" style="background: linear-gradient(135deg, #ffc107 0%, #ffcd38 100%); color: white;">
+            <h3 style="font-size: 2.5rem; margin-bottom: 0.5rem;">{{ stats.pedidos_pendentes }}</h3>
+            <p style="font-size: 1.1rem;">Pendentes</p>
+        </div>
+        <div class="card" style="background: linear-gradient(135deg, #17a2b8 0%, #1fc8e3 100%); color: white;">
+            <h3 style="font-size: 2.5rem; margin-bottom: 0.5rem;">{{ stats.pedidos_preparando }}</h3>
+            <p style="font-size: 1.1rem;">Em Preparo</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Pedidos Ativos</h2>
+        </div>
+        <div id="pedidos-ativos">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Tipo</th>
+                        <th>Mesa</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th>Tempo</th>
+                        <th>Itens</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pedido in pedidos_ativos %}
+                    <tr>
+                        <td><strong style="font-size: 1.2rem; color: var(--primary-color);">#{{ pedido.numero_pedido }}</strong></td>
+                        <td>{{ pedido.get_tipo_display }}</td>
+                        <td>{{ pedido.mesa|default:"---" }}</td>
+                        <td><span class="status-badge status-{{ pedido.status }}">{{ pedido.get_status_display }}</span></td>
+                        <td><strong>R$ {{ pedido.total }}</strong></td>
+                        <td>{{ pedido.criado_em|date:"H:i" }}</td>
+                        <td>{{ pedido.itens.count }} item(s)</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #999; padding: 2rem;">Nenhum pedido ativo no momento</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh a cada 10 segundos
+    setInterval(() => {
+        location.reload();
+    }, 10000);
+</script>
+{% endblock %}

@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visão Cliente - {{ empresa.nome }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0B0B0B;
+            --bg-card: #202020;
+            --border-color: #2E2E2E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #BDBDBD;
+            --accent-color: #F4A23A;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .header {
+            background: #1A1A1A;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .split-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: calc(100vh - 50px);
+            gap: 0;
+        }
+
+        .left-panel {
+            background: var(--bg-primary);
+            padding: 1.5rem;
+            overflow-y: auto;
+            border-right: 2px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-panel {
+            background: #0F0F0F;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-title {
+            font-size: 1.44rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            text-align: center;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        #cardapio-lista {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.6rem;
+            flex: 1;
+            overflow-y: auto;
+            align-content: start;
+        }
+
+        /* Quando houver mais de 10 produtos, usar 2 colunas */
+        #cardapio-lista.multi-column {
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        /* CARDÁPIO DO DIA */
+        .produto-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            gap: 1rem;
+        }
+
+        .produto-item:hover {
+            border-color: var(--accent-color);
+            background: #252525;
+        }
+
+        .produto-info-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .produto-nome {
+            font-size: 1.3rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .produto-preco {
+            font-size: 1.275rem;
+            color: var(--accent-color);
+            font-weight: normal;
+            flex-shrink: 0;
+        }
+
+        .produto-badge-estoque-cliente {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            padding: 0.25rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        /* PEDIDO EM ANDAMENTO */
+        .pedido-container {
+            background: var(--bg-card);
+            border: 2px solid var(--accent-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .pedido-vazio {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-secondary);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .pedido-vazio-icon {
+            font-size: 3.5rem;
+            margin-bottom: 0.8rem;
+            opacity: 0.5;
+        }
+
+        #pedido-conteudo {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .pedido-info {
+            margin-bottom: 1rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .pedido-info-linha {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+            font-size: 0.95rem;
+        }
+
+        .pedido-info-label {
+            color: var(--text-secondary);
+        }
+
+        .pedido-info-valor {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .pedido-itens-titulo {
+            font-size: 0.935rem;
+            color: var(--text-primary);
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        #pedido-itens-lista {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.6rem;
+            align-content: start;
+        }
+
+        /* Quando houver mais de 6 itens, usar 2 colunas */
+        #pedido-itens-lista.multi-column {
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .pedido-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: #1A1A1A;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        /* Itens mais compactos quando em 2 colunas */
+        #pedido-itens-lista.multi-column .pedido-item {
+            padding: 0.6rem;
+            flex-direction: row;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        #pedido-itens-lista.multi-column .item-descricao {
+            flex: 1;
+            min-width: 0;
+        }
+
+        #pedido-itens-lista.multi-column .item-nome {
+            font-size: 0.9rem;
+        }
+
+        #pedido-itens-lista.multi-column .item-preco {
+            flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+
+        .item-descricao {
+            flex: 1;
+        }
+
+        .item-quantidade {
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .item-nome {
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .item-preco {
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-weight: normal;
+        }
+
+        .pedido-total {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 2px solid var(--accent-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .total-label {
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+
+        .total-valor {
+            font-size: 1.36rem;
+            color: var(--accent-color);
+            font-weight: normal;
+        }
+
+        /* SCROLLBAR - Mais discreta */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(244, 162, 58, 0.3);
+        }
+
+        /* RESPONSIVIDADE PARA QUANTIDADE DE ITENS */
+        @media (max-height: 900px) {
+            .produto-item {
+                padding: 0.6rem 0.9rem;
+            }
+            
+            .produto-nome {
+                font-size: 1.1rem;
+            }
+            
+            .produto-preco {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .produto-item {
+                padding: 0.5rem 0.8rem;
+            }
+            
+            .produto-nome {
+                font-size: 1rem;
+            }
+            
+            .produto-preco {
+                font-size: 1.2rem;
+            }
+            
+            #cardapio-lista {
+                gap: 0.4rem;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .produto-item {
+                padding: 0.4rem 0.7rem;
+            }
+            
+            .produto-nome {
+                font-size: 0.9rem;
+            }
+            
+            .produto-preco {
+                font-size: 1.1rem;
+            }
+            
+            #cardapio-lista {
+                gap: 0.3rem;
+            }
+            
+            .panel-title {
+                font-size: 1.2rem;
+                margin-bottom: 0.8rem;
+                padding-bottom: 0.6rem;
+            }
+        }
+
+        .empty-message {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* MODAL QR CODE */
+        .modal-qrcode {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-qrcode-content {
+            background: var(--bg-card);
+            margin: 5% auto;
+            padding: 2.5rem;
+            border: 2px solid var(--accent-color);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-qrcode-header {
+            font-size: 1.8rem;
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .modal-qrcode-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        #qrcode-container-cliente {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: inline-block;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        #qrcode-url-cliente {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            word-break: break-all;
+            margin-top: 1rem;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .modal-qrcode-footer {
+            margin-top: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🍽️ {{ empresa.nome }}</h1>
+    </div>
+
+    <div class="split-container">
+        <!-- PAINEL ESQUERDO: CARDÁPIO DO DIA -->
+        <div class="left-panel">
+            <h2 class="panel-title">📋 Cardápio do Dia</h2>
+            
+            <div id="cardapio-lista">
+                {% for produto in produtos %}
+                <div class="produto-item" data-produto-id="{{ produto.id }}">
+                    <div class="produto-info-wrapper">
+                        <span class="produto-nome">{{ produto.nome }}</span>
+                        {% if produto.quantidade_estoque > 0 %}
+                        <span class="produto-badge-estoque-cliente" data-produto-id="{{ produto.id }}" style="display: none;">{{ produto.quantidade_estoque }} un</span>
+                        {% endif %}
+                    </div>
+                    <span class="produto-preco">R$ {{ produto.preco }}</span>
+                </div>
+                {% empty %}
+                <p class="empty-message">Nenhum produto disponível no momento</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- PAINEL DIREITO: PEDIDO EM ANDAMENTO -->
+        <div class="right-panel">
+            <h2 class="panel-title">🛒 Pedido em Andamento</h2>
+            
+            <div class="pedido-container" id="pedido-container">
+                <div class="pedido-vazio" id="pedido-vazio">
+                    <div class="pedido-vazio-icon">🛒</div>
+                    <p>Aguardando novo pedido...</p>
+                    <small style="color: var(--text-secondary); opacity: 0.7;">O pedido aparecerá aqui em tempo real</small>
+                </div>
+
+                <div id="pedido-conteudo" style="display: none;">
+                    <div class="pedido-info">
+                        <div class="pedido-info-linha">
+                            <span class="pedido-info-label">👤 Cliente:</span>
+                            <span class="pedido-info-valor" id="pedido-cliente">-</span>
+                        </div>
+                        <div class="pedido-info-linha">
+                            <span class="pedido-info-label">📍 Refeição:</span>
+                            <span class="pedido-info-valor" id="pedido-tipo">-</span>
+                        </div>
+                        <div class="pedido-info-linha">
+                            <span class="pedido-info-label">💳 Pagamento:</span>
+                            <span class="pedido-info-valor" id="pedido-pagamento">-</span>
+                        </div>
+                    </div>
+
+                    <div class="pedido-itens-titulo">🛒 Itens (<span id="pedido-itens-count">0</span>)</div>
+                    
+                    <div id="pedido-itens-lista"></div>
+
+                    <div class="pedido-total">
+                        <span class="total-label">💰 Total:</span>
+                        <span class="total-valor">R$ <span id="pedido-total">0.00</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL QR CODE -->
+    <div id="modal-qrcode-cliente" class="modal-qrcode">
+        <div class="modal-qrcode-content">
+            <div class="modal-qrcode-header">
+                📱 Acompanhe seu Pedido
+            </div>
+            <div class="modal-qrcode-body">
+                <div id="qrcode-container-cliente"></div>
+                <div id="qrcode-url-cliente"></div>
+            </div>
+            <div class="modal-qrcode-footer">
+                Escaneie o QR Code para acompanhar seu pedido
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script>
+        const empresaId = {{ empresa.id }};
+        let ultimoPedidoId = null;
+        let ultimoCarrinho = null;
+
+        // Restaurar badges de estoque do localStorage
+        function restaurarBadgesEstoque() {
+            const badges = document.querySelectorAll('.produto-badge-estoque-cliente');
+            
+            badges.forEach(badge => {
+                const produtoId = badge.dataset.produtoId;
+                const estadoSalvo = localStorage.getItem(`mostrar_estoque_${produtoId}`);
+                
+                if (estadoSalvo === 'true') {
+                    badge.style.display = 'block';
+                }
+            });
+        }
+
+        // Executar ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            restaurarBadgesEstoque();
+        });
+
+        // Conectar ao espelhamento em tempo real
+        function iniciarEspelhamento() {
+            // Verificar carrinho em tempo real (localStorage) a cada 500ms
+            setInterval(verificarCarrinho, 500);
+            
+            // Verificar pedidos finalizados a cada 3 segundos
+            setInterval(buscarPedidoAtivo, 3000);
+        }
+
+        function verificarCarrinho() {
+            try {
+                // Tentar ler do localStorage (compartilhado entre abas)
+                const carrinhoStr = localStorage.getItem('caixa_carrinho_temp');
+                
+                if (carrinhoStr && carrinhoStr !== ultimoCarrinho) {
+                    ultimoCarrinho = carrinhoStr;
+                    const carrinho = JSON.parse(carrinhoStr);
+                    
+                    if (carrinho && carrinho.itens && carrinho.itens.length > 0) {
+                        exibirCarrinho(carrinho);
+                    } else {
+                        limparPedido();
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao verificar carrinho:', error);
+            }
+        }
+
+        async function buscarPedidoAtivo() {
+            try {
+                const response = await fetch(`/cliente/pedido-ativo/${empresaId}/`);
+                const data = await response.json();
+
+                if (data.pedido) {
+                    // Se é um novo pedido finalizado
+                    if (data.pedido.id !== ultimoPedidoId) {
+                        ultimoPedidoId = data.pedido.id;
+                        exibirPedido(data.pedido);
+                        
+                        // Limpar após 5 segundos
+                        setTimeout(() => {
+                            limparPedido();
+                            ultimoPedidoId = null;
+                        }, 5000);
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao buscar pedido ativo:', error);
+            }
+        }
+
+        function exibirCarrinho(carrinho) {
+            document.getElementById('pedido-vazio').style.display = 'none';
+            document.getElementById('pedido-conteudo').style.display = 'block';
+
+            // Atualizar informações
+            document.getElementById('pedido-cliente').textContent = carrinho.cliente_nome || 'Digitando...';
+            
+            const tipoMap = {
+                'balcao': '⛪ Local',
+                'delivery': '🚗 Viagem'
+            };
+            document.getElementById('pedido-tipo').textContent = tipoMap[carrinho.tipo] || '⛪ Local';
+            
+            const pagamentoMap = {
+                'dinheiro': '💵 Dinheiro',
+                'debito': '💳 Débito',
+                'credito': '💳 Crédito',
+                'pix': '📱 PIX'
+            };
+            document.getElementById('pedido-pagamento').textContent = pagamentoMap[carrinho.pagamento] || '💵 Dinheiro';
+
+            // Atualizar itens
+            const listaItens = document.getElementById('pedido-itens-lista');
+            listaItens.innerHTML = '';
+
+            // Aplicar layout de 2 colunas se houver mais de 6 itens
+            if (carrinho.itens.length > 6) {
+                listaItens.classList.add('multi-column');
+            } else {
+                listaItens.classList.remove('multi-column');
+            }
+
+            let total = 0;
+            carrinho.itens.forEach(item => {
+                const subtotal = item.preco * item.quantidade;
+                total += subtotal;
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'pedido-item';
+                itemDiv.innerHTML = `
+                    <div class="item-descricao">
+                        <span class="item-quantidade">${item.quantidade}x</span>
+                        <span class="item-nome">${item.nome}</span>
+                    </div>
+                    <span class="item-preco">R$ ${subtotal.toFixed(2)}</span>
+                `;
+                listaItens.appendChild(itemDiv);
+            });
+
+            // Atualizar contadores e total
+            document.getElementById('pedido-itens-count').textContent = carrinho.itens.length;
+            document.getElementById('pedido-total').textContent = total.toFixed(2);
+        }
+
+        function exibirPedido(pedido) {
+            document.getElementById('pedido-vazio').style.display = 'none';
+            document.getElementById('pedido-conteudo').style.display = 'block';
+
+            // Atualizar informações
+            document.getElementById('pedido-cliente').textContent = pedido.cliente_nome || 'Cliente';
+            document.getElementById('pedido-tipo').textContent = pedido.tipo_display;
+            document.getElementById('pedido-pagamento').textContent = pedido.pagamento || 'Não informado';
+
+            // Atualizar itens
+            const listaItens = document.getElementById('pedido-itens-lista');
+            listaItens.innerHTML = '';
+
+            // Aplicar layout de 2 colunas se houver mais de 6 itens
+            if (pedido.itens.length > 6) {
+                listaItens.classList.add('multi-column');
+            } else {
+                listaItens.classList.remove('multi-column');
+            }
+
+            pedido.itens.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'pedido-item';
+                itemDiv.innerHTML = `
+                    <div class="item-descricao">
+                        <span class="item-quantidade">${item.quantidade}x</span>
+                        <span class="item-nome">${item.produto_nome}</span>
+                    </div>
+                    <span class="item-preco">R$ ${item.subtotal}</span>
+                `;
+                listaItens.appendChild(itemDiv);
+            });
+
+            // Atualizar contadores e total
+            document.getElementById('pedido-itens-count').textContent = pedido.itens.length;
+            document.getElementById('pedido-total').textContent = pedido.total;
+        }
+
+        function limparPedido() {
+            document.getElementById('pedido-vazio').style.display = 'block';
+            document.getElementById('pedido-conteudo').style.display = 'none';
+        }
+
+        // Iniciar quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar quantidade de produtos no cardápio e aplicar 2 colunas se necessário
+            const cardapioLista = document.getElementById('cardapio-lista');
+            const quantidadeProdutos = cardapioLista.querySelectorAll('.produto-item').length;
+            
+            if (quantidadeProdutos > 10) {
+                cardapioLista.classList.add('multi-column');
+            }
+            
+            iniciarEspelhamento();
+            iniciarSincronizacaoQRCode();
+        });
+
+        // SINCRONIZAÇÃO DO MODAL QR CODE
+        function iniciarSincronizacaoQRCode() {
+            // Listener para mudanças no localStorage
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'qrcode_modal' && e.newValue) {
+                    try {
+                        const data = JSON.parse(e.newValue);
+                        
+                        if (data.action === 'open') {
+                            mostrarQRCodeCliente(data.url);
+                        } else if (data.action === 'close') {
+                            fecharQRCodeCliente();
+                        }
+                    } catch (error) {
+                        console.error('Erro ao processar sincronização QR Code:', error);
+                    }
+                }
+            });
+
+            // Verificar se já existe um QR code aberto ao carregar a página
+            try {
+                const qrcodeData = localStorage.getItem('qrcode_modal');
+                if (qrcodeData) {
+                    const data = JSON.parse(qrcodeData);
+                    
+                    // Se foi aberto recentemente (últimos 30 segundos), mostrar
+                    if (data.action === 'open' && (Date.now() - data.timestamp) < 30000) {
+                        mostrarQRCodeCliente(data.url);
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao verificar QR Code inicial:', error);
+            }
+        }
+
+        function mostrarQRCodeCliente(url) {
+            const modal = document.getElementById('modal-qrcode-cliente');
+            const container = document.getElementById('qrcode-container-cliente');
+            const urlElement = document.getElementById('qrcode-url-cliente');
+            
+            // Limpar container anterior
+            container.innerHTML = '';
+            
+            // Gerar QR Code
+            new QRCode(container, {
+                text: url,
+                width: 256,
+                height: 256,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            // Mostrar URL
+            urlElement.textContent = url;
+            
+            // Mostrar modal
+            modal.style.display = 'block';
+            
+            console.log('Modal QR Code aberto na tela do cliente:', url);
+        }
+
+        function fecharQRCodeCliente() {
+            const modal = document.getElementById('modal-qrcode-cliente');
+            modal.style.display = 'none';
+            
+            console.log('Modal QR Code fechado na tela do cliente');
+        }
+    </script>
+</body>
+</html>

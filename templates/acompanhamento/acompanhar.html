@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acompanhar Pedido #{{ pedido.numero_pedido }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0B0B0B 0%, #1A1A1A 100%);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        .tracking-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .pedido-numero {
+            font-size: 1.8rem;
+            color: #F4A23A;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .empresa-nome {
+            color: #BDBDBD;
+            font-size: 1rem;
+        }
+        
+        .cliente-nome {
+            color: #FFFFFF;
+            font-size: 2.2rem;
+            margin-top: 0.8rem;
+            margin-bottom: 0.3rem;
+            font-weight: bold;
+        }
+        
+        /* Status Card */
+        .status-card {
+            background: #202020;
+            border-radius: 16px;
+            padding: 2rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #2E2E2E;
+        }
+        
+        .status-atual {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .status-icon-grande {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+        
+        .status-titulo {
+            font-size: 1.5rem;
+            color: #F4A23A;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .status-frase {
+            color: #BDBDBD;
+            font-size: 1rem;
+            line-height: 1.5;
+            transition: all 0.3s ease;
+        }
+        
+        /* Esteira de Progresso */
+        .progress-track {
+            position: relative;
+            padding: 2rem 0;
+        }
+        
+        .progress-line {
+            position: absolute;
+            left: 30px;
+            top: 40px;
+            bottom: 40px;
+            width: 4px;
+            background: #2E2E2E;
+        }
+        
+        .progress-line-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            background: linear-gradient(180deg, #F4A23A 0%, #D98A1F 100%);
+            transition: height 0.8s ease;
+        }
+        
+        .progress-step {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            z-index: 1;
+        }
+        
+        .progress-step:last-child {
+            margin-bottom: 0;
+        }
+        
+        .step-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #2E2E2E;
+            border: 4px solid #2E2E2E;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+            transition: all 0.5s ease;
+        }
+        
+        .progress-step.completed .step-circle {
+            background: #28a745;
+            border-color: #28a745;
+        }
+        
+        .progress-step.active .step-circle {
+            background: #F4A23A;
+            border-color: #F4A23A;
+            animation: pulse 2s infinite;
+        }
+        
+        .step-info {
+            margin-left: 1.5rem;
+            flex: 1;
+        }
+        
+        .step-titulo {
+            font-size: 1.1rem;
+            color: #FFFFFF;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            transition: color 0.3s ease;
+        }
+        
+        .step-descricao {
+            color: #BDBDBD;
+            font-size: 0.9rem;
+        }
+        
+        .progress-step.completed .step-titulo,
+        .progress-step.active .step-titulo {
+            color: #F4A23A;
+        }
+        
+        /* Itens do Pedido */
+        .itens-card {
+            background: #202020;
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid #2E2E2E;
+        }
+        
+        .itens-titulo {
+            font-size: 1.2rem;
+            color: #FFFFFF;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .item-linha {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #2E2E2E;
+        }
+        
+        .item-linha:last-child {
+            border-bottom: none;
+        }
+        
+        .item-descricao {
+            color: #BDBDBD;
+            flex: 1;
+        }
+        
+        .item-quantidade {
+            color: #F4A23A;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .item-valor {
+            color: #FFFFFF;
+            font-weight: 600;
+            white-space: nowrap;
+            margin-left: 1rem;
+        }
+        
+        .total-linha {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0 0 0;
+            margin-top: 1rem;
+            border-top: 2px solid #F4A23A;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        
+        .total-label {
+            color: #FFFFFF;
+        }
+        
+        .total-valor {
+            color: #F4A23A;
+        }
+        
+        /* Indicador de atualização */
+        .update-indicator {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #28a745;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .update-indicator.updating {
+            opacity: 1;
+            animation: blink 1s infinite;
+        }
+        
+        /* Alerta de pedido pronto */
+        body.pedido-pronto {
+            animation: flashGreen 1.5s infinite;
+        }
+        
+        body.pedido-pronto .status-card {
+            animation: flashGreenCard 1.5s infinite;
+            box-shadow: 0 0 30px rgba(40, 167, 69, 0.6);
+        }
+        
+        body.pedido-pronto .status-icon-grande {
+            animation: bounceAlert 0.8s infinite;
+        }
+        
+        /* Animações */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(244, 162, 58, 0.7);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(244, 162, 58, 0);
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+        
+        @keyframes flashGreen {
+            0%, 100% {
+                background: linear-gradient(135deg, #0B0B0B 0%, #1A1A1A 100%);
+            }
+            50% {
+                background: linear-gradient(135deg, #0d3d0d 0%, #1a3d1a 100%);
+            }
+        }
+        
+        @keyframes flashGreenCard {
+            0%, 100% {
+                background: #202020;
+                border-color: #2E2E2E;
+            }
+            50% {
+                background: #1a3d1a;
+                border-color: #28a745;
+            }
+        }
+        
+        @keyframes bounceAlert {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            25% {
+                transform: translateY(-15px) scale(1.1);
+            }
+            50% {
+                transform: translateY(0) scale(1);
+            }
+            75% {
+                transform: translateY(-8px) scale(1.05);
+            }
+        }
+        
+        /* Responsivo */
+        @media (max-width: 480px) {
+            .tracking-container {
+                padding: 1rem;
+            }
+            
+            .cliente-nome {
+                font-size: 1.8rem;
+            }
+            
+            .pedido-numero {
+                font-size: 1.5rem;
+            }
+            
+            .status-icon-grande {
+                font-size: 4rem;
+            }
+            
+            .status-titulo {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body{% if pedido.status == 'pronto' %} class="pedido-pronto"{% endif %}>
+    <div class="update-indicator" id="update-indicator"></div>
+    
+    <div class="tracking-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🍽️</div>
+            {% if pedido.cliente_nome %}
+            <div class="cliente-nome">{{ pedido.cliente_nome }}</div>
+            {% endif %}
+            <div class="pedido-numero">Pedido #{{ pedido.numero_pedido }}</div>
+            <div class="empresa-nome">{{ pedido.empresa.nome }}</div>
+        </div>
+        
+        <!-- Status Atual -->
+        <div class="status-card">
+            <div class="status-atual" id="status-atual">
+                <div class="status-icon-grande" id="status-icon">📝</div>
+                <div class="status-titulo" id="status-titulo">Pedido Recebido!</div>
+                <div class="status-frase" id="status-frase">Seu pedido está na fila e logo será preparado. Aguarde um pouquinho!</div>
+            </div>
+            
+            <!-- Esteira de Progresso -->
+            <div class="progress-track">
+                <div class="progress-line">
+                    <div class="progress-line-fill" id="progress-fill" style="height: {% if pedido.status == 'pendente' %}0%{% elif pedido.status == 'preparando' %}33%{% elif pedido.status == 'pronto' %}66%{% elif pedido.status == 'entregue' %}100%{% endif %};"></div>
+                </div>
+                
+                <div class="progress-step {% if pedido.status == 'pendente' %}active{% elif pedido.status in 'preparando,pronto,entregue' %}completed{% endif %}" id="step-pendente">
+                    <div class="step-circle">📝</div>
+                    <div class="step-info">
+                        <div class="step-titulo">Fila</div>
+                        <div class="step-descricao">Pedido recebido</div>
+                    </div>
+                </div>
+                
+                <div class="progress-step {% if pedido.status == 'preparando' %}active{% elif pedido.status in 'pronto,entregue' %}completed{% endif %}" id="step-preparando">
+                    <div class="step-circle">👨‍🍳</div>
+                    <div class="step-info">
+                        <div class="step-titulo">Preparando</div>
+                        <div class="step-descricao">Em produção</div>
+                    </div>
+                </div>
+                
+                <div class="progress-step {% if pedido.status == 'pronto' %}active{% elif pedido.status == 'entregue' %}completed{% endif %}" id="step-pronto">
+                    <div class="step-circle">✅</div>
+                    <div class="step-info">
+                        <div class="step-titulo">Pronto</div>
+                        <div class="step-descricao">Pode retirar</div>
+                    </div>
+                </div>
+                
+                <div class="progress-step {% if pedido.status == 'entregue' %}active completed{% endif %}" id="step-entregue">
+                    <div class="step-circle">🎉</div>
+                    <div class="step-info">
+                        <div class="step-titulo">Entregue</div>
+                        <div class="step-descricao">Bom apetite!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Itens do Pedido -->
+        <div class="itens-card">
+            <div class="itens-titulo">🛍️ Seus Itens</div>
+            {% for item in pedido.itens.all %}
+            <div class="item-linha">
+                <div class="item-descricao">
+                    <span class="item-quantidade">{{ item.quantidade }}x</span>
+                    {{ item.produto.nome }}
+                </div>
+                <div class="item-valor">R$ {{ item.subtotal }}</div>
+            </div>
+            {% endfor %}
+            
+            <div class="total-linha">
+                <div class="total-label">Total</div>
+                <div class="total-valor">R$ {{ pedido.total }}</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const qrCode = '{{ pedido.qr_code }}';
+        let currentStatus = '{{ pedido.status }}';
+        let alertSound = null;
+        let isAlertActive = false;
+        
+        // Criar som de alerta (beep)
+        function criarSomAlerta() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800; // Frequência do beep
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+            
+            return audioContext;
+        }
+        
+        // Vibrar celular
+        function vibrarCelular() {
+            if ('vibrate' in navigator) {
+                // Padrão de vibração: vibra 200ms, pausa 100ms, vibra 200ms
+                navigator.vibrate([200, 100, 200, 100, 200]);
+            }
+        }
+        
+        // Ativar alerta de pedido pronto
+        function ativarAlertaPronto() {
+            if (isAlertActive) return;
+            
+            isAlertActive = true;
+            document.body.classList.add('pedido-pronto');
+            
+            // Tocar som
+            try {
+                criarSomAlerta();
+            } catch (error) {
+                console.log('Erro ao tocar som:', error);
+            }
+            
+            // Vibrar celular
+            vibrarCelular();
+            
+            // Repetir som e vibração a cada 5 segundos
+            const alertInterval = setInterval(() => {
+                if (currentStatus !== 'pronto') {
+                    clearInterval(alertInterval);
+                    return;
+                }
+                
+                try {
+                    criarSomAlerta();
+                } catch (error) {
+                    console.log('Erro ao tocar som:', error);
+                }
+                vibrarCelular();
+            }, 5000);
+        }
+        
+        // Desativar alerta
+        function desativarAlerta() {
+            isAlertActive = false;
+            document.body.classList.remove('pedido-pronto');
+        }
+        
+        // Configuração de status
+        const statusConfig = {
+            'pendente': {
+                icon: '📝',
+                titulo: 'Pedido Recebido!',
+                frase: 'Seu pedido está na fila e logo será preparado. Aguarde um pouquinho!',
+                progress: 0
+            },
+            'preparando': {
+                icon: '👨‍🍳',
+                titulo: 'Preparando com Carinho!',
+                frase: 'Nossa equipe está preparando seu pedido com todo cuidado. Não vai demorar!',
+                progress: 33
+            },
+            'pronto': {
+                icon: '✅',
+                titulo: 'Prontinho!',
+                frase: 'Seu pedido está pronto! Pode vir buscar que está quentinho!',
+                progress: 66
+            },
+            'entregue': {
+                icon: '🎉',
+                titulo: 'Entregue!',
+                frase: 'Bom apetite! Esperamos que aproveite sua refeição!',
+                progress: 100
+            }
+        };
+        
+        // Atualizar UI com novo status
+        function atualizarStatus(novoStatus, forcarAtualizacao = false) {
+            const statusAnterior = currentStatus;
+            
+            // Se não forçar atualização e o status é o mesmo, não fazer nada
+            if (!forcarAtualizacao && novoStatus === currentStatus) return;
+            
+            currentStatus = novoStatus;
+            const config = statusConfig[novoStatus];
+            
+            // Atualizar status atual
+            document.getElementById('status-icon').textContent = config.icon;
+            document.getElementById('status-titulo').textContent = config.titulo;
+            document.getElementById('status-frase').textContent = config.frase;
+            
+            // Atualizar barra de progresso
+            document.getElementById('progress-fill').style.height = config.progress + '%';
+            
+            // Atualizar steps
+            const steps = ['pendente', 'preparando', 'pronto', 'entregue'];
+            const currentIndex = steps.indexOf(novoStatus);
+            
+            steps.forEach((step, index) => {
+                const stepElement = document.getElementById('step-' + step);
+                stepElement.classList.remove('active', 'completed');
+                
+                if (index < currentIndex) {
+                    stepElement.classList.add('completed');
+                } else if (index === currentIndex) {
+                    stepElement.classList.add('active');
+                }
+            });
+            
+            // Ativar alerta se pedido ficou pronto
+            if (novoStatus === 'pronto' && statusAnterior !== 'pronto') {
+                ativarAlertaPronto();
+            }
+            
+            // Desativar alerta se pedido foi entregue
+            if (novoStatus === 'entregue') {
+                desativarAlerta();
+            }
+        }
+        
+        // Buscar status atualizado
+        async function buscarStatus() {
+            const indicator = document.getElementById('update-indicator');
+            indicator.classList.add('updating');
+            
+            try {
+                const response = await fetch(`/acompanhamento/api/${qrCode}/`);
+                const data = await response.json();
+                
+                if (data.status !== currentStatus) {
+                    console.log('Status atualizado:', currentStatus, '->', data.status);
+                    atualizarStatus(data.status);
+                }
+            } catch (error) {
+                console.error('Erro ao buscar status:', error);
+            } finally {
+                setTimeout(() => {
+                    indicator.classList.remove('updating');
+                }, 300);
+            }
+        }
+        
+        // NÃO inicializar status - deixar o HTML renderizado pelo servidor
+        // atualizarStatus(currentStatus);
+        
+        // Se já está pronto, ativar alerta
+        if (currentStatus === 'pronto') {
+            ativarAlertaPronto();
+        }
+        
+        // Polling a cada 3 segundos
+        setInterval(buscarStatus, 3000);
+        
+        // Primeira atualização após 1 segundo
+        setTimeout(buscarStatus, 1000);
+        
+        // Permitir interação do usuário para habilitar áudio (requisito dos navegadores)
+        document.addEventListener('click', function() {
+            // Criar contexto de áudio na primeira interação
+            if (!window.audioContextCreated) {
+                window.audioContextCreated = true;
+                console.log('Áudio habilitado');
+            }
+        }, { once: true });
+    </script>
+</body>
+</html>

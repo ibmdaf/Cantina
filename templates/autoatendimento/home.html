@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autoatendimento - {{ empresa.nome }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div style="background: linear-gradient(135deg, #000 0%, #1a1a1a 100%); color: white; padding: 2rem; text-align: center;">
+        <h1 style="font-size: 2.5rem; color: var(--primary-color);">🍽️ {{ empresa.nome }}</h1>
+        <p style="font-size: 1.2rem;">Faça seu pedido</p>
+    </div>
+
+    <div class="container">
+        <div class="form-group" style="margin: 2rem 0;">
+            <select id="categoria-filter" class="form-control">
+                <option value="">Todas as Categorias</option>
+                {% for cat in categorias %}
+                <option value="{{ cat.id }}">{{ cat.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div id="produtos-grid" class="grid grid-3">
+            {% for produto in produtos %}
+            <div class="card produto-item" data-categoria="{{ produto.categoria.id }}" onclick="adicionarProduto({{ produto.id }}, '{{ produto.nome }}', {{ produto.preco }})">
+                {% if produto.imagem %}
+                <img src="{{ produto.imagem.url }}" alt="{{ produto.nome }}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+                {% else %}
+                <div style="width: 100%; height: 150px; background: linear-gradient(135deg, var(--primary-color), #ff8c5a); border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 3rem;">
+                    🍽️
+                </div>
+                {% endif %}
+                <h3 style="color: var(--primary-color); font-size: 1.2rem;">{{ produto.nome }}</h3>
+                <p style="color: #666; font-size: 0.9rem; margin: 0.5rem 0;">{{ produto.descricao|truncatewords:15 }}</p>
+                <p style="font-size: 1.5rem; font-weight: bold; color: var(--secondary-color); margin-top: 1rem;">R$ {{ produto.preco }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="carrinho-flutuante" style="position: fixed; bottom: 20px; right: 20px; background: var(--primary-color); color: white; padding: 1rem 2rem; border-radius: 50px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); cursor: pointer; display: none;" onclick="abrirCarrinho()">
+        <span style="font-size: 1.5rem;">🛒</span>
+        <span id="carrinho-count" style="font-weight: bold; margin-left: 0.5rem;">0</span>
+        <span style="margin-left: 0.5rem;">itens</span>
+    </div>
+
+    <div id="modal-carrinho" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; overflow-y: auto;">
+        <div style="max-width: 600px; margin: 2rem auto; background: white; border-radius: 16px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="color: var(--secondary-color);">Seu Pedido</h2>
+                <button onclick="fecharCarrinho()" style="background: none; border: none; font-size: 2rem; cursor: pointer;">×</button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Seu Nome</label>
+                <input type="text" id="cliente-nome" class="form-control" placeholder="Digite seu nome">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Número da Mesa (opcional)</label>
+                <input type="text" id="mesa" class="form-control" placeholder="Ex: 5">
+            </div>
+
+            <div id="lista-carrinho" style="margin: 2rem 0;"></div>
+
+            <div style="border-top: 2px solid var(--primary-color); padding-top: 1rem; margin-top: 1rem;">
+                <h2 style="text-align: right; color: var(--secondary-color);">Total: R$ <span id="total-carrinho">0.00</span></h2>
+            </div>
+
+            <button onclick="finalizarPedido()" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.2rem; margin-top: 1rem;">
+                Finalizar Pedido
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let carrinho = [];
+        const empresaId = {{ empresa.id }};
+
+        function adicionarProduto(id, nome, preco) {
+            const itemExistente = carrinho.find(item => item.produto_id === id);
+            
+            if (itemExistente) {
+                itemExistente.quantidade++;
+            } else {
+                carrinho.push({
+                    produto_id: id,
+                    nome: nome,
+                    preco: parseFloat(preco),
+                    quantidade: 1
+                });
+            }
+            
+            atualizarCarrinho();
+        }
+
+        function atualizarCarrinho() {
+            const count = carrinho.reduce((sum, item) => sum + item.quantidade, 0);
+            document.getElementById('carrinho-count').textContent = count;
+            document.getElementById('carrinho-flutuante').style.display = count > 0 ? 'block' : 'none';
+        }
+
+        function abrirCarrinho() {
+            const lista = document.getElementById('lista-carrinho');
+            let html = '';
+            let total = 0;
+
+            carrinho.forEach((item, index) => {
+                const subtotal = item.preco * item.quantidade;
+                total += subtotal;
+                
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8f9fa; border-radius: 8px; margin-bottom: 0.5rem;">
+                        <div>
+                            <strong>${item.nome}</strong><br>
+                            <span style="color: #666;">R$ ${item.preco.toFixed(2)} x ${item.quantidade}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <button onclick="alterarQuantidade(${index}, -1)" class="btn btn-secondary" style="padding: 0.3rem 0.8rem;">-</button>
+                            <span style="font-weight: bold;">${item.quantidade}</span>
+                            <button onclick="alterarQuantidade(${index}, 1)" class="btn btn-secondary" style="padding: 0.3rem 0.8rem;">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            lista.innerHTML = html;
+            document.getElementById('total-carrinho').textContent = total.toFixed(2);
+            document.getElementById('modal-carrinho').style.display = 'block';
+        }
+
+        function fecharCarrinho() {
+            document.getElementById('modal-carrinho').style.display = 'none';
+        }
+
+        function alterarQuantidade(index, delta) {
+            carrinho[index].quantidade += delta;
+            if (carrinho[index].quantidade <= 0) {
+                carrinho.splice(index, 1);
+            }
+            atualizarCarrinho();
+            abrirCarrinho();
+        }
+
+        async function finalizarPedido() {
+            if (carrinho.length === 0) {
+                alert('Adicione pelo menos um item!');
+                return;
+            }
+
+            const clienteNome = document.getElementById('cliente-nome').value;
+            if (!clienteNome) {
+                alert('Por favor, digite seu nome!');
+                return;
+            }
+
+            const dados = {
+                cliente_nome: clienteNome,
+                mesa: document.getElementById('mesa').value,
+                itens: carrinho
+            };
+
+            try {
+                const response = await fetch(`/autoatendimento/${empresaId}/criar-pedido/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    window.location.href = `/acompanhamento/${result.qr_code}/`;
+                } else {
+                    alert('Erro ao criar pedido!');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao criar pedido!');
+            }
+        }
+
+        document.getElementById('categoria-filter').addEventListener('change', function() {
+            const categoriaId = this.value;
+            const produtos = document.querySelectorAll('.produto-item');
+            
+            produtos.forEach(produto => {
+                if (!categoriaId || produto.dataset.categoria === categoriaId) {
+                    produto.style.display = 'block';
+                } else {
+                    produto.style.display = 'none';
+                }
+            });
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

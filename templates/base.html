@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema Cantina{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo">🍽️ {{ user.empresa.nome }}</div>
+                <nav class="main-nav tabs-menu-header">
+                    <a href="{% url 'caixa_novo_pedido' %}" class="tab-btn {% if aba_ativa == 'novo-pedido' %}active{% endif %}" onclick="event.preventDefault(); showTab('novo-pedido');">🛒 Pedido</a>
+                    <a href="{% url 'caixa_cardapio_dia' %}" class="tab-btn {% if aba_ativa == 'cardapio' %}active{% endif %}" onclick="event.preventDefault(); showTab('cardapio');">📋 Cardápio</a>
+                    <a href="{% url 'caixa_estoque' %}" class="tab-btn {% if aba_ativa == 'estoque' %}active{% endif %}" onclick="event.preventDefault(); showTab('estoque');">📦 Estoque</a>
+                    <a href="{% url 'caixa_relatorios' %}" class="tab-btn {% if aba_ativa == 'relatorios' %}active{% endif %}" onclick="event.preventDefault(); showTab('relatorios');">📊 Relatórios</a>
+                    <a href="{% url 'caixa_links' %}" class="tab-btn {% if aba_ativa == 'links' %}active{% endif %}" onclick="event.preventDefault(); showTab('links');">🔗 Links</a>
+                    {% if user.tipo != 'caixa' %}
+                    <a href="{% url 'caixa_usuarios' %}" class="tab-btn {% if aba_ativa == 'usuarios' %}active{% endif %}" onclick="event.preventDefault(); showTab('usuarios');">👥 Usuários</a>
+                    <a href="{% url 'caixa_configuracoes' %}" class="tab-btn {% if aba_ativa == 'configuracoes' %}active{% endif %}" onclick="event.preventDefault(); showTab('configuracoes');">⚙️ Configurações</a>
+                    {% endif %}
+                </nav>
+            </div>
+            <div class="user-info">
+                <span>{{ user.username }}</span>
+                <button onclick="toggleFullscreen()" class="btn btn-secondary btn-fullscreen" title="Tela cheia">⛶</button>
+                <a href="{% url 'logout' %}" class="btn btn-secondary btn-sair">Sair</a>
+            </div>
+        </div>
+    </header>
+    {% endif %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="/static/js/main.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
