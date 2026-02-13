@@ -1204,12 +1204,24 @@ def api_pedidos_ativos(request):
         # Buscar itens do pedido
         itens_data = []
         for item in pedido.itens.all():
-            itens_data.append({
+            item_dict = {
                 'quantidade': item.quantidade,
                 'produto_nome': item.produto.nome,
                 'preco_unitario': str(item.preco_unitario),
-                'subtotal': str(item.subtotal)
-            })
+                'subtotal': str(item.subtotal),
+                'is_combo': item.produto.is_combo()
+            }
+            
+            # Se for combo, adicionar escolhas
+            if item.produto.is_combo():
+                escolhas = []
+                for escolha in item.combo_escolhas.all():
+                    escolhas.append({
+                        'produto_nome': escolha.produto_escolhido.nome
+                    })
+                item_dict['escolhas'] = escolhas
+            
+            itens_data.append(item_dict)
         
         # Contar total de itens
         total_itens = sum(item.quantidade for item in pedido.itens.all())

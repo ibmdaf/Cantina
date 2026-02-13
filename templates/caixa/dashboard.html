@@ -5140,6 +5140,17 @@ function criarCardPedido(pedido) {
                     <span class="item-valor">R$ ${item.subtotal}</span>
                 </div>
             `;
+            
+            // Se for combo, adicionar escolhas
+            if (item.is_combo && item.escolhas && item.escolhas.length > 0) {
+                item.escolhas.forEach(escolha => {
+                    itensHTML += `
+                        <div class="pedido-item-linha" style="margin-left: 1rem; font-size: 0.85rem; color: var(--text-secondary);">
+                            <span class="item-descricao">• ${escolha.produto_nome}</span>
+                        </div>
+                    `;
+                });
+            }
         });
     }
     
@@ -7572,7 +7583,7 @@ atualizarListaItens = function() {
         if (item.is_combo) {
             // Renderizar combo com escolhas
             const escolhasHtml = item.escolhas.map(e => 
-                `<div style="font-size: 0.85rem; color: var(--text-secondary); margin-left: 1rem;">• ${e.slot_nome}: ${e.produto_nome}</div>`
+                `<div style="font-size: 0.85rem; color: var(--text-secondary); margin-left: 1rem;">• ${e.produto_nome}</div>`
             ).join('');
             
             html += `
