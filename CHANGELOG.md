@@ -7,6 +7,96 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
+## [2.2.0] - 13/02/2026
+
+### ✨ Adicionado
+
+#### Filtro de Categorias no Cardápio do Caixa
+- Select de categorias ao lado do campo de busca
+- Filtro combinado: busca + categoria
+- Contador de itens atualizado dinamicamente
+- Função `filtrarCardapio()` implementada
+
+**Arquivos**: `templates/caixa/dashboard.html`
+
+#### Detalhes dos Itens do Combo
+- Itens do combo exibidos no carrinho (sem nome do slot)
+- Itens do combo exibidos nos pedidos ativos
+- API retorna escolhas do combo com `is_combo` e `escolhas`
+- Exibição hierárquica: combo → itens
+
+**Arquivos**: `caixa/views.py`, `templates/caixa/dashboard.html`
+
+### 🐛 Corrigido
+
+#### Erro ao Criar Pedido com Combo
+**Problema**: "Produto matching query does not exist" ao finalizar pedido com combo.
+
+**Causa**: Backend retornava `combo.id` ao invés de `combo.produto.id`.
+
+**Solução**:
+- Backend: Retorna `produto_id` e `combo_id` separadamente
+- Frontend: Usa `combo.produto_id` ao adicionar ao carrinho
+- Tratamento de erro melhorado com IDs específicos
+
+**Arquivos**: `caixa/views.py`, `templates/caixa/dashboard.html`
+
+#### HTML do Card de Produto Quebrado
+**Problema**: Tag `</div>` no lugar errado quebrando estrutura HTML.
+
+**Solução**: Corrigida estrutura do card de produto no cardápio.
+
+**Arquivos**: `templates/caixa/dashboard.html`
+
+#### Estoque Não Abatendo
+**Problema**: Verificação `if produto.quantidade_estoque > 0` impedia estoque negativo.
+
+**Solução**: Removida verificação para permitir estoque negativo (controle manual).
+
+**Arquivos**: `caixa/views.py`
+
+### 📊 Melhorado
+
+#### Exibição de Estoque de Combos
+- Combos mostram "-" ao invés de quantidade numérica
+- Verificação por categoria "Combo"
+- Combos não têm limite de estoque
+
+**Arquivos**: `templates/caixa/dashboard.html`
+
+#### Tratamento de Erros
+- Mensagens de erro mais descritivas
+- IDs específicos em erros de produto não encontrado
+- Tratamento de erro ao processar combos
+- Logs de debug para troubleshooting
+
+**Arquivos**: `caixa/views.py`
+
+#### Contador de Itens do Cardápio
+- Inicialização correta no DOMContentLoaded
+- Atualização dinâmica ao filtrar
+- Mostra total de itens visíveis
+
+**Arquivos**: `templates/caixa/dashboard.html`
+
+#### Logs de Debug
+- Adicionados logs em `criar_pedido()`
+- Adicionados logs em `adicionarProduto()`
+- Console.log para debug de combos
+
+**Arquivos**: `caixa/views.py`, `static/js/caixa.js`
+
+### 🔧 Técnico
+
+#### Cache Busting
+- Adicionado versionamento nos arquivos CSS/JS
+- Parâmetro `?v=timestamp` para forçar reload
+- Atualizado em cada deploy
+
+**Arquivos**: `templates/caixa/dashboard.html`
+
+---
+
 ## [2.1.0] - 11/02/2026
 
 ### 🐛 Corrigido
