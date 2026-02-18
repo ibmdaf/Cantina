@@ -1170,7 +1170,10 @@ def api_pedidos_ativos(request):
     pedidos_ativos = Pedido.objects.filter(
         empresa=empresa,
         status__in=['pendente', 'preparando', 'pronto']
-    ).order_by('criado_em').prefetch_related('itens__produto')
+    ).order_by('criado_em').prefetch_related(
+        'itens__produto',
+        'itens__escolhas_combo__produto_escolhido'
+    )
     
     # Calcular estatísticas
     total_pendente = pedidos_ativos.filter(status='pendente').count()
@@ -1215,7 +1218,7 @@ def api_pedidos_ativos(request):
             # Se for combo, adicionar escolhas
             if item.produto.is_combo():
                 escolhas = []
-                for escolha in item.combo_escolhas.all():
+                for escolha in item.escolhas_combo.all():
                     escolhas.append({
                         'produto_nome': escolha.produto_escolhido.nome
                     })

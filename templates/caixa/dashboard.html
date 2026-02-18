@@ -5235,11 +5235,11 @@ function iniciarPollingPedidos() {
     // Atualizar imediatamente
     atualizarPedidosAtivos();
     
-    // Atualizar dados da API a cada 1 segundo (mais rápido para sincronização)
+    // Atualizar dados da API a cada 20 segundos (reduzido para não sobrecarregar o sistema)
     if (intervalPedidosAtivos) {
         clearInterval(intervalPedidosAtivos);
     }
-    intervalPedidosAtivos = setInterval(atualizarPedidosAtivos, 1000);
+    intervalPedidosAtivos = setInterval(atualizarPedidosAtivos, 20000);
     
     // Atualizar cronômetros localmente a cada 1 segundo
     if (intervalCronometrosLocal) {
