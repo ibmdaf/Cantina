@@ -6732,36 +6732,48 @@ let usuarioEmEdicao = null;
 
 async function abrirModalEditarUsuario(usuarioId) {
     try {
+        console.log('Buscando usuário ID:', usuarioId);
+        
         // Buscar dados do usuário
         const response = await fetch(`/caixa/usuarios/${usuarioId}/`);
-        const data = await response.json();
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
         
-        console.log('Dados do usuário:', data); // Debug
+        const data = await response.json();
+        console.log('Dados recebidos:', data);
         
         if (data.success) {
             usuarioEmEdicao = data.usuario;
+            console.log('Usuario em edição:', usuarioEmEdicao);
             
             // Preencher campos do modal
-            document.getElementById('editar-usuario-nome').value = data.usuario.nome || '';
-            document.getElementById('editar-usuario-username').value = data.usuario.username || '';
+            const nome = data.usuario.nome || '';
+            const username = data.usuario.username || '';
+            const tipo = data.usuario.tipo || 'caixa';
+            
+            console.log('Valores a preencher:', { nome, username, tipo });
+            
+            document.getElementById('editar-usuario-nome').value = nome;
+            document.getElementById('editar-usuario-username').value = username;
             document.getElementById('editar-usuario-senha').value = '';
             document.getElementById('editar-usuario-senha-confirmar').value = '';
-            document.getElementById('editar-usuario-tipo').value = data.usuario.tipo || 'caixa';
+            document.getElementById('editar-usuario-tipo').value = tipo;
             
-            console.log('Campos preenchidos:', {
+            console.log('Campos após preenchimento:', {
                 nome: document.getElementById('editar-usuario-nome').value,
                 username: document.getElementById('editar-usuario-username').value,
                 tipo: document.getElementById('editar-usuario-tipo').value
-            }); // Debug
+            });
             
             // Abrir modal
             const modal = document.getElementById('modal-editar-usuario');
             modal.style.display = 'block';
         } else {
-            showToast('❌ Erro ao carregar usuário!', 'error');
+            console.error('Erro na resposta:', data.error);
+            showToast('❌ Erro ao carregar usuário: ' + (data.error || 'Erro desconhecido'), 'error');
         }
     } catch (error) {
-        console.error('Erro:', error);
+        console.error('Erro ao buscar usuário:', error);
         showToast('❌ Erro ao carregar usuário!', 'error');
     }
 }

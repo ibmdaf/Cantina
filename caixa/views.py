@@ -1528,6 +1528,12 @@ def buscar_usuario(request, usuario_id):
         from authentication.models import Usuario
         usuario = get_object_or_404(Usuario, id=usuario_id, empresa=request.user.empresa)
         
+        # Debug: imprimir dados do usuário
+        print(f"DEBUG - Buscando usuário ID: {usuario_id}")
+        print(f"DEBUG - Nome (first_name): '{usuario.first_name}'")
+        print(f"DEBUG - Username: '{usuario.username}'")
+        print(f"DEBUG - Tipo: '{usuario.tipo}'")
+        
         return JsonResponse({
             'success': True,
             'usuario': {
@@ -1539,6 +1545,7 @@ def buscar_usuario(request, usuario_id):
             }
         })
     except Exception as e:
+        print(f"DEBUG - Erro ao buscar usuário: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)})
 
 @login_required
