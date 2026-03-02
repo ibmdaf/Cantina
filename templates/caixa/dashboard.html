@@ -2314,6 +2314,24 @@
     overflow: visible !important;
 }
 
+/* Mesmas regras para tabela de usuários */
+.data-table td:last-child {
+    position: relative;
+    overflow: visible !important;
+}
+
+.data-table tr {
+    overflow: visible !important;
+}
+
+.data-table tbody {
+    overflow: visible !important;
+}
+
+.data-table {
+    overflow: visible !important;
+}
+
 .menu-acoes-dropdown button {
     display: block;
     width: 100%;
@@ -3523,12 +3541,13 @@ textarea.form-control::placeholder {
 .tab-content {
     display: none;
     flex: 1;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .tab-content.active {
     display: flex;
     flex-direction: column;
+    overflow: visible;
 }
 
 /* TABELAS */
@@ -3537,7 +3556,7 @@ textarea.form-control::placeholder {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .data-table th {
@@ -4180,12 +4199,13 @@ input:checked + .toggle-slider:before {
 .tab-content {
     display: none;
     flex: 1;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .tab-content.active {
     display: flex;
     flex-direction: column;
+    overflow: visible;
 }
 
 /* FORMULÁRIOS */
