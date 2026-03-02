@@ -7,6 +7,35 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
+## [2.3.0] - 02/03/2026
+
+### 🎨 Melhorado
+
+#### Espaçamento de Formulários Padronizado
+- Aumentado espaço entre campo anterior e próximo título: `1.8rem → 2.2rem`
+- Reduzido espaço entre título e seu campo: `0.5rem → 0.3rem`
+- Objetivo: Melhor separação visual de grupos e associação título-campo
+- Aplicado em todos os formulários do sistema
+
+**Classes Afetadas**:
+- `.form-group`: `margin-top: 2.2rem`, `gap: 0.3rem`
+- `.form-row`: `margin-top: 2.2rem`
+- `.modal-editar-dados .form-group`: `margin-top: 1.5rem`
+- `.modal-produto-coluna-esquerda/direita`: `gap: 1.5rem`
+
+**Formulários Atualizados**:
+- Novo Pedido
+- Novo/Editar Produto
+- Novo/Editar Usuário
+- Novo/Editar Combo
+- Modal de Excluir Pedido
+- Modal de Editar Pedido
+- Modal de Categorias
+
+**Arquivos**: `templates/caixa/dashboard.html`, `GUIA_VISUAL.md`
+
+---
+
 ## [2.2.0] - 13/02/2026
 
 ### ✨ Adicionado

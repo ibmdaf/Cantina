@@ -433,4 +433,72 @@ ACOMPANHAMENTO
 
 ---
 
+## 📏 Padrões de Espaçamento em Formulários
+
+### Medidas Padrão
+
+```
+┌─────────────────────────────────────────┐
+│                                         │
+│  Campo Anterior: [______________]       │
+│                                         │  ← 2.2rem (GRANDE)
+│  ↓ Espaço entre campo e próximo título │
+│                                         │
+│  Próximo Título                         │  ← 0.3rem (PEQUENO)
+│  ↓ Espaço entre título e seu campo     │
+│  Seu Campo: [______________]            │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+### Classes CSS Aplicadas
+
+**`.form-group`** (Espaçamento vertical entre grupos)
+- `margin-top: 2.2rem` - Espaço GRANDE entre campo anterior e próximo título
+- `gap: 0.3rem` - Espaço PEQUENO entre título e seu campo
+- `margin-bottom: 0` - Sem margem inferior
+- Primeiro `.form-group` tem `margin-top: 0`
+
+**`.form-row`** (Campos lado a lado)
+- `margin-top: 2.2rem` - Consistente com `.form-group`
+- `gap: 0.6rem` - Espaço entre colunas
+- `.form-row .form-group` tem `margin-top: 0` (não duplicar espaço)
+
+**`.form-label`** (Títulos dos campos)
+- `margin-bottom: 0` - Controlado pelo `gap` do `.form-group`
+- `font-size: 0.85rem`
+- `font-weight: 500`
+
+### Modais Específicos
+
+**Modal de Editar Pedido** (`.modal-editar-dados`)
+- `margin-top: 1.5rem` - Espaçamento reduzido para modal compacto
+- Primeiro `.form-group` tem `margin-top: 0`
+
+**Modal de Produto** (`.modal-produto-coluna-esquerda/direita`)
+- `gap: 1.5rem` - Espaçamento entre grupos de campos
+- `.form-group` interno com `gap: 0.3rem`
+- `.form-label` com `margin-bottom: 0`
+
+### Formulários Afetados
+
+✅ Novo Pedido (aba Pedido)
+✅ Novo Produto / Editar Produto
+✅ Novo Usuário / Editar Usuário
+✅ Novo Combo / Editar Combo
+✅ Modal de Excluir Pedido
+✅ Modal de Editar Pedido
+✅ Modal de Categorias
+✅ Todos os formulários que usam `.form-group` e `.form-label`
+
+### Objetivo do Padrão
+
+O espaçamento foi projetado para:
+1. **Separar visualmente** grupos de campos (espaço grande)
+2. **Associar** título ao seu campo (espaço pequeno)
+3. **Melhorar legibilidade** e compreensão do formulário
+4. **Evitar confusão** sobre qual título pertence a qual campo
+
+---
+
 **Este guia visual ajuda a entender o layout e design do sistema sem precisar executá-lo!**
