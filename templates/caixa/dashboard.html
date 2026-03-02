@@ -760,7 +760,7 @@
             
             <div class="form-group">
                 <label class="form-label">Usuário (sem espaços, letras minúsculas)</label>
-                <input type="text" id="novo-usuario-username" class="form-control" placeholder="Digite o nome de usuário" style="text-transform: lowercase;">
+                <input type="text" id="novo-usuario-username" class="form-control" placeholder="Digite o nome de usuário">
             </div>
             
             <div class="form-group">
@@ -805,7 +805,7 @@
             
             <div class="form-group">
                 <label class="form-label">Usuário (sem espaços, letras minúsculas)</label>
-                <input type="text" id="editar-usuario-username" class="form-control" placeholder="Digite o nome de usuário" style="text-transform: lowercase;">
+                <input type="text" id="editar-usuario-username" class="form-control" placeholder="Digite o nome de usuário">
             </div>
             
             <div class="form-group">
@@ -6527,7 +6527,9 @@ function fecharModalNovoUsuario() {
 
 async function criarNovoUsuario() {
     const nome = document.getElementById('novo-usuario-nome').value.trim();
-    let username = document.getElementById('novo-usuario-username').value.trim().toLowerCase().replace(/\s+/g, '');
+    const usernameOriginal = document.getElementById('novo-usuario-username').value.trim();
+    // Remover espaços e converter para minúsculas
+    const username = usernameOriginal.toLowerCase().replace(/\s+/g, '');
     const senha = document.getElementById('novo-usuario-senha').value;
     const senhaConfirmar = document.getElementById('novo-usuario-senha-confirmar').value;
     const tipo = document.getElementById('novo-usuario-tipo').value;
@@ -6538,14 +6540,13 @@ async function criarNovoUsuario() {
         return;
     }
     
-    if (!username) {
+    if (!usernameOriginal) {
         showToast('❌ Nome de usuário é obrigatório!', 'error');
         return;
     }
     
-    // Validar que username não tem espaços
-    if (/\s/.test(username)) {
-        showToast('❌ Nome de usuário não pode conter espaços!', 'error');
+    if (!username) {
+        showToast('❌ Nome de usuário não pode estar vazio!', 'error');
         return;
     }
     
@@ -6695,7 +6696,9 @@ async function salvarEdicaoUsuario() {
     if (!usuarioEmEdicao) return;
     
     const nome = document.getElementById('editar-usuario-nome').value.trim();
-    let username = document.getElementById('editar-usuario-username').value.trim().toLowerCase().replace(/\s+/g, '');
+    const usernameOriginal = document.getElementById('editar-usuario-username').value.trim();
+    // Remover espaços e converter para minúsculas
+    const username = usernameOriginal.toLowerCase().replace(/\s+/g, '');
     const senha = document.getElementById('editar-usuario-senha').value;
     const senhaConfirmar = document.getElementById('editar-usuario-senha-confirmar').value;
     const tipo = document.getElementById('editar-usuario-tipo').value;
@@ -6706,14 +6709,13 @@ async function salvarEdicaoUsuario() {
         return;
     }
     
-    if (!username) {
+    if (!usernameOriginal) {
         showToast('❌ Nome de usuário é obrigatório!', 'error');
         return;
     }
     
-    // Validar que username não tem espaços
-    if (/\s/.test(username)) {
-        showToast('❌ Nome de usuário não pode conter espaços!', 'error');
+    if (!username) {
+        showToast('❌ Nome de usuário não pode estar vazio!', 'error');
         return;
     }
     
