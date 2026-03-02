@@ -759,11 +759,6 @@
             </div>
             
             <div class="form-group">
-                <label class="form-label">Email (opcional)</label>
-                <input type="email" id="novo-usuario-email" class="form-control" placeholder="Digite o email">
-            </div>
-            
-            <div class="form-group">
                 <label class="form-label">Senha</label>
                 <input type="password" id="novo-usuario-senha" class="form-control" placeholder="Digite a senha">
             </div>
@@ -786,6 +781,45 @@
         <div style="display: flex; gap: 1rem; justify-content: flex-end;">
             <button onclick="fecharModalNovoUsuario()" class="btn btn-secondary" style="padding: 0.7rem 1.5rem;">Cancelar</button>
             <button onclick="criarNovoUsuario()" class="btn btn-primary" style="padding: 0.7rem 1.5rem;">Criar Usuário</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL EDITAR USUÁRIO -->
+<div id="modal-editar-usuario" class="modal" onclick="fecharModalSeForaDoConteudo(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 500px;">
+        <span class="modal-close" onclick="fecharModalEditarUsuario()">&times;</span>
+        <h2 style="color: var(--btn-primary);">✏️ Editar Usuário</h2>
+        
+        <div style="margin: 1.5rem 0;">
+            <div class="form-group">
+                <label class="form-label">Nome de Usuário</label>
+                <input type="text" id="editar-usuario-username" class="form-control" placeholder="Digite o nome de usuário">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Nova Senha (deixe em branco para não alterar)</label>
+                <input type="password" id="editar-usuario-senha" class="form-control" placeholder="Digite a nova senha">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Confirmar Nova Senha</label>
+                <input type="password" id="editar-usuario-senha-confirmar" class="form-control" placeholder="Confirme a nova senha">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Tipo de Usuário</label>
+                <select id="editar-usuario-tipo" class="form-control">
+                    <option value="admin">Administrador</option>
+                    <option value="caixa">Caixa</option>
+                    <option value="cozinha">Cozinha</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button onclick="fecharModalEditarUsuario()" class="btn btn-secondary" style="padding: 0.7rem 1.5rem;">Cancelar</button>
+            <button onclick="salvarEdicaoUsuario()" class="btn btn-primary" style="padding: 0.7rem 1.5rem;">Salvar Alterações</button>
         </div>
     </div>
 </div>
@@ -6467,7 +6501,6 @@ function abrirModalNovoUsuario() {
     const modal = document.getElementById('modal-novo-usuario');
     // Limpar campos
     document.getElementById('novo-usuario-username').value = '';
-    document.getElementById('novo-usuario-email').value = '';
     document.getElementById('novo-usuario-senha').value = '';
     document.getElementById('novo-usuario-senha-confirmar').value = '';
     document.getElementById('novo-usuario-tipo').value = 'caixa';
@@ -6481,7 +6514,6 @@ function fecharModalNovoUsuario() {
 
 async function criarNovoUsuario() {
     const username = document.getElementById('novo-usuario-username').value.trim();
-    const email = document.getElementById('novo-usuario-email').value.trim();
     const senha = document.getElementById('novo-usuario-senha').value;
     const senhaConfirmar = document.getElementById('novo-usuario-senha-confirmar').value;
     const tipo = document.getElementById('novo-usuario-tipo').value;
@@ -6516,7 +6548,6 @@ async function criarNovoUsuario() {
             },
             body: JSON.stringify({
                 username: username,
-                email: email,
                 password: senha,
                 tipo: tipo
             })
@@ -6598,10 +6629,101 @@ async function excluirUsuario(usuarioId, usuarioNome) {
     );
 }
 
-function abrirModalEditarUsuario(usuarioId) {
-    // Por enquanto, redireciona para o admin do Django
-    // Futuramente pode ser implementado um modal customizado
-    window.location.href = `/admin/authentication/usuario/${usuarioId}/change/`;
+let usuarioEmEdicao = null;
+
+async function abrirModalEditarUsuario(usuarioId) {
+    try {
+        // Buscar dados do usuário
+        const response = await fetch(`/caixa/usuarios/${usuarioId}/`);
+        const data = await response.json();
+        
+        if (data.success) {
+            usuarioEmEdicao = data.usuario;
+            
+            // Preencher campos do modal
+            document.getElementById('editar-usuario-username').value = data.usuario.username;
+            document.getElementById('editar-usuario-senha').value = '';
+            document.getElementById('editar-usuario-senha-confirmar').value = '';
+            document.getElementById('editar-usuario-tipo').value = data.usuario.tipo;
+            
+            // Abrir modal
+            const modal = document.getElementById('modal-editar-usuario');
+            modal.style.display = 'block';
+        } else {
+            showToast('❌ Erro ao carregar usuário!', 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('❌ Erro ao carregar usuário!', 'error');
+    }
+}
+
+function fecharModalEditarUsuario() {
+    const modal = document.getElementById('modal-editar-usuario');
+    modal.style.display = 'none';
+    usuarioEmEdicao = null;
+}
+
+async function salvarEdicaoUsuario() {
+    if (!usuarioEmEdicao) return;
+    
+    const username = document.getElementById('editar-usuario-username').value.trim();
+    const senha = document.getElementById('editar-usuario-senha').value;
+    const senhaConfirmar = document.getElementById('editar-usuario-senha-confirmar').value;
+    const tipo = document.getElementById('editar-usuario-tipo').value;
+    
+    // Validações
+    if (!username) {
+        showToast('❌ Nome de usuário é obrigatório!', 'error');
+        return;
+    }
+    
+    // Se está alterando senha, validar
+    if (senha || senhaConfirmar) {
+        if (senha !== senhaConfirmar) {
+            showToast('❌ As senhas não coincidem!', 'error');
+            return;
+        }
+        
+        if (senha.length < 4) {
+            showToast('❌ A senha deve ter pelo menos 4 caracteres!', 'error');
+            return;
+        }
+    }
+    
+    try {
+        const payload = {
+            username: username,
+            tipo: tipo
+        };
+        
+        // Só incluir senha se foi preenchida
+        if (senha) {
+            payload.password = senha;
+        }
+        
+        const response = await fetch(`/caixa/usuarios/${usuarioEmEdicao.id}/editar/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast('✅ Usuário atualizado com sucesso!', 'success');
+            fecharModalEditarUsuario();
+            location.reload();
+        } else {
+            showToast('❌ Erro: ' + (data.error || 'Erro desconhecido'), 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('❌ Erro ao atualizar usuário!', 'error');
+    }
 }
 
 // VARIÁVEIS GLOBAIS PARA EDIÇÃO

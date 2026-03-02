@@ -1433,7 +1433,6 @@ def criar_usuario(request):
         try:
             data = json.loads(request.body)
             username = data.get('username', '').strip()
-            email = data.get('email', '').strip()
             password = data.get('password', '')
             tipo = data.get('tipo', 'caixa')
             
@@ -1451,7 +1450,6 @@ def criar_usuario(request):
             # Criar usuário
             usuario = Usuario.objects.create_user(
                 username=username,
-                email=email if email else None,
                 password=password,
                 tipo=tipo,
                 empresa=request.user.empresa
@@ -1508,6 +1506,64 @@ def excluir_usuario(request, usuario_id):
             return JsonResponse({
                 'success': True,
                 'message': 'Usuário excluído com sucesso!'
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método não permitido'})
+
+@login_required
+def buscar_usuario(request, usuario_id):
+    """Buscar dados de um usuário"""
+    try:
+        from authentication.models import Usuario
+        usuario = get_object_or_404(Usuario, id=usuario_id, empresa=request.user.empresa)
+        
+        return JsonResponse({
+            'success': True,
+            'usuario': {
+                'id': usuario.id,
+                'username': usuario.username,
+                'tipo': usuario.tipo,
+                'is_active': usuario.is_active
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+def editar_usuario(request, usuario_id):
+    """Editar usuário"""
+    if request.method == 'POST':
+        try:
+            from authentication.models import Usuario
+            usuario = get_object_or_404(Usuario, id=usuario_id, empresa=request.user.empresa)
+            
+            data = json.loads(request.body)
+            username = data.get('username', '').strip()
+            password = data.get('password', '')
+            tipo = data.get('tipo', usuario.tipo)
+            
+            if not username:
+                return JsonResponse({'success': False, 'error': 'Nome de usuário é obrigatório'})
+            
+            # Verificar se username já existe (exceto o próprio usuário)
+            if Usuario.objects.filter(username=username).exclude(id=usuario_id).exists():
+                return JsonResponse({'success': False, 'error': 'Nome de usuário já existe'})
+            
+            # Atualizar dados
+            usuario.username = username
+            usuario.tipo = tipo
+            
+            # Atualizar senha se foi fornecida
+            if password:
+                usuario.set_password(password)
+            
+            usuario.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Usuário atualizado com sucesso!'
             })
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
