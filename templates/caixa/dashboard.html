@@ -5230,9 +5230,17 @@ async function publicarAlteracoesCardapio() {
     fecharModalPublicarCardapio();
     
     try {
+        console.log('Iniciando publicação de alterações...');
+        console.log('Mudanças de disponibilidade:', mudancasCardapio.disponibilidade);
+        console.log('Mudanças de estoque:', mudancasCardapio.estoque);
+        
         // Aplicar mudanças de disponibilidade
-        for (const [produtoId, disponivel] of Object.entries(mudancasCardapio.disponibilidade)) {
-            await fetch('/caixa/atualizar-disponibilidade/', {
+        const disponibilidadeEntries = Object.entries(mudancasCardapio.disponibilidade || {});
+        console.log('Total de mudanças de disponibilidade:', disponibilidadeEntries.length);
+        
+        for (const [produtoId, disponivel] of disponibilidadeEntries) {
+            console.log(`Atualizando produto ${produtoId} para disponível=${disponivel}`);
+            const response = await fetch('/caixa/atualizar-disponibilidade/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -5243,8 +5251,16 @@ async function publicarAlteracoesCardapio() {
                     disponivel: disponivel
                 })
             });
+            
+            const result = await response.json();
+            console.log(`Resultado para produto ${produtoId}:`, result);
+            
+            if (!result.success) {
+                throw new Error(`Erro ao atualizar produto ${produtoId}: ${result.error || 'Erro desconhecido'}`);
+            }
         }
         
+        console.log('Recarregando produtos na aba Novo Pedido...');
         // Recarregar produtos na aba Novo Pedido
         await recarregarProdutosNovoPedido();
         
@@ -5253,15 +5269,19 @@ async function publicarAlteracoesCardapio() {
         mudancasCardapio = { disponibilidade: {}, estoque: {} };
         
         const btnPublicar = document.getElementById('btn-publicar-cardapio');
-        btnPublicar.disabled = true;
-        btnPublicar.style.opacity = '0.5';
-        btnPublicar.style.cursor = 'not-allowed';
+        if (btnPublicar) {
+            btnPublicar.disabled = true;
+            btnPublicar.style.opacity = '0.5';
+            btnPublicar.style.cursor = 'not-allowed';
+        }
         
+        console.log('Publicação concluída com sucesso!');
         showToast('✅ Alterações publicadas com sucesso!', 'success');
         
     } catch (error) {
         console.error('Erro ao publicar alterações:', error);
-        showToast('❌ Erro ao publicar alterações!', 'error');
+        console.error('Stack trace:', error.stack);
+        showToast('❌ Erro ao publicar alterações: ' + error.message, 'error');
     }
 }
 
@@ -6211,6 +6231,72 @@ function atualizarContadorDisponiveis() {
     const contadorElement = document.getElementById('total-disponiveis');
     if (contadorElement) {
         contadorElement.textContent = total;
+    }
+}
+
+async function recarregarProdutosNovoPedido() {
+    try {
+        console.log('Recarregando produtos na aba Novo Pedido...');
+        const empresaId = {{ user.empresa.id }};
+        const response = await fetch(`/caixa/api/produtos-disponiveis/${empresaId}/`);
+        const data = await response.json();
+        
+        console.log('Resposta da API:', data);
+        
+        if (data.success && data.produtos) {
+            const grid = document.querySelector('.produtos-cardapio-grid');
+            if (!grid) {
+                console.warn('Grid de produtos não encontrado');
+                return;
+            }
+            
+            grid.innerHTML = '';
+            
+            data.produtos.forEach(produto => {
+                const card = document.createElement('div');
+                card.className = 'produto-card-cardapio';
+                card.dataset.nome = produto.nome.toLowerCase();
+                card.dataset.codigo = produto.id;
+                card.dataset.categoria = produto.categoria ? produto.categoria.nome : '';
+                card.dataset.isCombo = produto.is_combo ? 'true' : 'false';
+                
+                if (produto.is_combo) {
+                    card.onclick = function() {
+                        abrirModalSelecaoCombo(produto.combo_id, produto.nome, produto.preco);
+                    };
+                } else {
+                    card.onclick = function() {
+                        adicionarProduto(produto.id, produto.nome, produto.preco);
+                    };
+                }
+                
+                card.innerHTML = `
+                    <div class="produto-card-info">
+                        <h4>${produto.is_combo ? '🎁 ' : ''}${produto.nome}</h4>
+                        <span class="produto-codigo">#${String(produto.id).padStart(3, '0')}</span>
+                    </div>
+                    <div class="produto-card-preco">R$ ${parseFloat(produto.preco).toFixed(2)}</div>
+                    ${produto.quantidade_estoque > 0 && !produto.is_combo ? 
+                        `<span class="produto-badge-estoque" data-produto-id="${produto.id}" style="display: none;">${produto.quantidade_estoque} un</span>` 
+                        : ''}
+                `;
+                
+                grid.appendChild(card);
+            });
+            
+            // Restaurar estado dos badges de estoque
+            restaurarEstadoMostrarEstoque();
+            
+            // Aplicar filtros atuais
+            filtrarCardapio();
+            
+            console.log('Produtos recarregados com sucesso!');
+        } else {
+            console.error('Erro na resposta da API:', data);
+        }
+    } catch (error) {
+        console.error('Erro ao recarregar produtos:', error);
+        throw error; // Re-throw para ser capturado pela função que chamou
     }
 }
 
