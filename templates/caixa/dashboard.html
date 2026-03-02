@@ -4688,7 +4688,7 @@ input:checked + .toggle-slider:before {
 .table-wrapper-fixed-header {
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    overflow: hidden;
+    overflow: visible;
     background: var(--bg-card);
 }
 
@@ -4744,6 +4744,11 @@ input:checked + .toggle-slider:before {
 
 .table-scroll-container .data-table tr {
     overflow: visible;
+}
+
+.table-scroll-container .data-table td:last-child {
+    position: relative;
+    overflow: visible !important;
 }
 
 .table-scroll-container .data-table thead {
