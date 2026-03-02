@@ -5926,41 +5926,39 @@ async function salvarNomeSistema() {
 }
 
 function limparSelecaoCardapio() {
-    // Seleciona todos os checkboxes da coluna "Disponível Hoje" (terceira coluna)
-    const checkboxesDisponiveis = document.querySelectorAll('#tabela-cardapio tbody tr td:nth-child(3) input[type="checkbox"]');
-    const checkboxesMostrarEstoque = document.querySelectorAll('#tabela-cardapio tbody tr td:nth-child(4) input[type="checkbox"]');
-    
-    // Desmarcar "Disponível Hoje"
-    checkboxesDisponiveis.forEach(checkbox => {
-        if (checkbox.checked) {
-            checkbox.checked = false;
-            // Disparar o evento de mudança para salvar no backend
-            atualizarDisponibilidade(checkbox);
+    abrirModalConfirmacao(
+        '🗑️ Limpar Seleção',
+        'Tem certeza que deseja desmarcar todos os itens do cardápio? Isso irá remover todos os itens da disponibilidade e ocultar os estoques.',
+        () => {
+            // Seleciona todos os checkboxes da coluna "Disponível Hoje" (terceira coluna)
+            const checkboxesDisponiveis = document.querySelectorAll('#tabela-cardapio tbody tr td:nth-child(3) input[type="checkbox"]');
+            const checkboxesMostrarEstoque = document.querySelectorAll('#tabela-cardapio tbody tr td:nth-child(4) input[type="checkbox"]');
+            
+            // Desmarcar "Disponível Hoje"
+            checkboxesDisponiveis.forEach(checkbox => {
+                if (checkbox.checked) {
+                    checkbox.checked = false;
+                    // Disparar o evento de mudança para salvar no backend
+                    atualizarDisponibilidade(checkbox);
+                }
+            });
+            
+            // Desmarcar "Mostrar Estoque"
+            checkboxesMostrarEstoque.forEach(checkbox => {
+                if (checkbox.checked) {
+                    checkbox.checked = false;
+                    // Disparar o evento de mudança
+                    toggleMostrarEstoque(checkbox);
+                }
+            });
+            
+            // Atualizar contador de itens disponíveis
+            atualizarContadorDisponiveis();
+            
+            // Feedback visual
+            showToast('✅ Seleção limpa com sucesso!', 'success');
         }
-    });
-    
-    // Desmarcar "Mostrar Estoque"
-    checkboxesMostrarEstoque.forEach(checkbox => {
-        if (checkbox.checked) {
-            checkbox.checked = false;
-            // Disparar o evento de mudança
-            toggleMostrarEstoque(checkbox);
-        }
-    });
-    
-    // Atualizar contador de itens disponíveis
-    atualizarContadorDisponiveis();
-    
-    // Feedback visual
-    const btn = event.target;
-    const originalText = btn.textContent;
-    btn.textContent = '✓ Limpo';
-    btn.style.background = '#28a745';
-    
-    setTimeout(() => {
-        btn.textContent = originalText;
-        btn.style.background = '';
-    }, 2000);
+    );
 }
 
 async function atualizarDisponibilidade(checkbox) {
