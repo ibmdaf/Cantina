@@ -315,14 +315,23 @@ strong {
 
 /* Forms */
 .form-group {
-    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0;
+    margin-top: 2.2rem;
+}
+
+.form-group:first-child {
+    margin-top: 0;
 }
 
 .form-label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
     font-weight: 600;
     color: var(--primary-color);
+    font-size: 0.85rem;
 }
 
 .form-control {

@@ -861,7 +861,7 @@
                 <li>Excluir permanentemente o pedido</li>
             </ul>
             
-            <div class="form-group" style="margin-top: 1.5rem;">
+            <div class="form-group">
                 <label class="form-label">Para confirmar, digite <strong style="color: var(--btn-primary);">EXCLUIR</strong> no campo abaixo:</label>
                 <input 
                     type="text" 
@@ -1036,12 +1036,12 @@
                 </div>
                 
                 <div class="form-row-inline">
-                    <div class="form-group" style="flex: 1.5;">
+                    <div class="form-group">
                         <label class="form-label">💰 Preço (R$)</label>
                         <input type="number" id="produto-preco" class="form-control" placeholder="0.00" step="0.01" min="0" required>
                     </div>
 
-                    <div class="form-group" style="flex: 1;">
+                    <div class="form-group">
                         <label class="form-label">📦 Estoque/Qnt.</label>
                         <input type="number" id="produto-quantidade" class="form-control" placeholder="0" min="0" value="0">
                     </div>
@@ -1108,14 +1108,14 @@
             <div class="categorias-coluna-esquerda">
                 <h3 class="categoria-section-title">➕ Nova Categoria</h3>
                 
-                <div class="form-group" style="margin-bottom: 0.6rem;">
-                    <label class="form-label" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Nome da Categoria</label>
-                    <input type="text" id="nova-categoria-nome" class="form-control" placeholder="Ex: Lanches, Bebidas..." style="margin: 0; font-size: 0.9rem; padding: 0.5rem;" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <div class="form-group">
+                    <label class="form-label">Nome da Categoria</label>
+                    <input type="text" id="nova-categoria-nome" class="form-control" placeholder="Ex: Lanches, Bebidas..." autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 
-                <div class="form-group" style="margin-bottom: 0.6rem; position: relative;">
-                    <label class="form-label" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Emoji</label>
-                    <input type="text" id="nova-categoria-emoji" class="form-control" value="🍽️" readonly onclick="abrirSeletorEmoji()" style="margin: 0; text-align: center; font-size: 1.4rem; cursor: pointer; padding: 0.5rem;">
+                <div class="form-group" style="position: relative;">
+                    <label class="form-label">Emoji</label>
+                    <input type="text" id="nova-categoria-emoji" class="form-control" value="🍽️" readonly onclick="abrirSeletorEmoji()" style="text-align: center; font-size: 1.4rem; cursor: pointer;">
                     
                     <!-- Seletor de Emoji -->
                     <div id="emoji-selector" style="display: none;">
@@ -1668,6 +1668,14 @@
     gap: 0.3rem;
 }
 
+.modal-produto-coluna-esquerda .form-row-inline .form-group:first-child {
+    flex: 1.5;
+}
+
+.modal-produto-coluna-esquerda .form-row-inline .form-group:last-child {
+    flex: 1;
+}
+
 .modal-produto-coluna-esquerda .form-label,
 .modal-produto-coluna-direita .form-label {
     font-size: 0.85rem;
@@ -1842,7 +1850,7 @@
 .categorias-coluna-esquerda {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 0;
     padding: 1rem;
     background: var(--bg-header);
     border: 1px solid var(--border-color);
@@ -1851,6 +1859,14 @@
     position: relative;
     overflow: visible;
     z-index: 10;
+}
+
+.categorias-coluna-esquerda .form-group {
+    margin-top: 2.2rem;
+}
+
+.categorias-coluna-esquerda .form-group:first-of-type {
+    margin-top: 0;
 }
 
 .categorias-coluna-direita {
