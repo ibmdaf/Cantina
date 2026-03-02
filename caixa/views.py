@@ -1425,3 +1425,91 @@ def api_produtos_disponiveis(request, empresa_id):
             'success': False,
             'error': str(e)
         })
+
+@login_required
+def criar_usuario(request):
+    """Criar novo usuário"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            username = data.get('username', '').strip()
+            email = data.get('email', '').strip()
+            password = data.get('password', '')
+            tipo = data.get('tipo', 'caixa')
+            
+            if not username:
+                return JsonResponse({'success': False, 'error': 'Nome de usuário é obrigatório'})
+            
+            if not password:
+                return JsonResponse({'success': False, 'error': 'Senha é obrigatória'})
+            
+            # Verificar se usuário já existe
+            from authentication.models import Usuario
+            if Usuario.objects.filter(username=username).exists():
+                return JsonResponse({'success': False, 'error': 'Nome de usuário já existe'})
+            
+            # Criar usuário
+            usuario = Usuario.objects.create_user(
+                username=username,
+                email=email if email else None,
+                password=password,
+                tipo=tipo,
+                empresa=request.user.empresa
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'usuario_id': usuario.id,
+                'message': 'Usuário criado com sucesso!'
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método não permitido'})
+
+@login_required
+def toggle_ativo_usuario(request, usuario_id):
+    """Ativar/Inativar usuário"""
+    if request.method == 'POST':
+        try:
+            from authentication.models import Usuario
+            usuario = get_object_or_404(Usuario, id=usuario_id, empresa=request.user.empresa)
+            
+            # Não permitir inativar o próprio usuário
+            if usuario.id == request.user.id:
+                return JsonResponse({'success': False, 'error': 'Você não pode inativar seu próprio usuário'})
+            
+            usuario.is_active = not usuario.is_active
+            usuario.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Usuário {"ativado" if usuario.is_active else "inativado"} com sucesso!'
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método não permitido'})
+
+@login_required
+def excluir_usuario(request, usuario_id):
+    """Excluir usuário"""
+    if request.method == 'DELETE':
+        try:
+            from authentication.models import Usuario
+            usuario = get_object_or_404(Usuario, id=usuario_id, empresa=request.user.empresa)
+            
+            # Não permitir excluir o próprio usuário
+            if usuario.id == request.user.id:
+                return JsonResponse({'success': False, 'error': 'Você não pode excluir seu próprio usuário'})
+            
+            usuario.delete()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Usuário excluído com sucesso!'
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método não permitido'})

@@ -441,7 +441,7 @@
             <h2 class="page-title">👥 Gestão de Usuários</h2>
             
             <div style="margin-bottom: 1.5rem;">
-                <button class="btn-action" onclick="window.location.href='/admin/authentication/usuario/add/'">+ Novo Usuário</button>
+                <button class="btn-action" onclick="abrirModalNovoUsuario()">+ Novo Usuário</button>
             </div>
 
             <table class="data-table">
@@ -471,8 +471,15 @@
                             <span class="status-badge-user status-inativo">Inativo</span>
                             {% endif %}
                         </td>
-                        <td>
-                            <button class="btn-table-action" onclick="abrirModalEditarUsuario({{ usuario.id }})">✏️ Editar</button>
+                        <td style="position: relative;">
+                            <button class="btn-menu-acoes" onclick="toggleMenuAcoesUsuario(event, {{ usuario.id }})">⋮</button>
+                            <div id="menu-acoes-usuario-{{ usuario.id }}" class="menu-acoes-dropdown" style="display: none;">
+                                <button onclick="abrirModalEditarUsuario({{ usuario.id }})">✏️ Editar</button>
+                                <button onclick="toggleAtivarUsuario({{ usuario.id }}, {{ usuario.is_active|yesno:'true,false' }})">
+                                    {% if usuario.is_active %}🚫 Inativar{% else %}✅ Ativar{% endif %}
+                                </button>
+                                <button onclick="excluirUsuario({{ usuario.id }}, '{{ usuario.username|escapejs }}')">🗑️ Excluir</button>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -735,6 +742,50 @@
         <div style="display: flex; gap: 1rem; justify-content: flex-end;">
             <button onclick="descartarMudancasCardapio()" class="btn btn-secondary" style="padding: 0.7rem 1.5rem;">Descartar</button>
             <button onclick="publicarEContinuar()" class="btn btn-primary" style="padding: 0.7rem 1.5rem; background: #28a745;">Publicar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL NOVO USUÁRIO -->
+<div id="modal-novo-usuario" class="modal" onclick="fecharModalSeForaDoConteudo(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 500px;">
+        <span class="modal-close" onclick="fecharModalNovoUsuario()">&times;</span>
+        <h2 style="color: var(--btn-primary);">👤 Novo Usuário</h2>
+        
+        <div style="margin: 1.5rem 0;">
+            <div class="form-group">
+                <label class="form-label">Nome de Usuário</label>
+                <input type="text" id="novo-usuario-username" class="form-control" placeholder="Digite o nome de usuário">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email (opcional)</label>
+                <input type="email" id="novo-usuario-email" class="form-control" placeholder="Digite o email">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Senha</label>
+                <input type="password" id="novo-usuario-senha" class="form-control" placeholder="Digite a senha">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Confirmar Senha</label>
+                <input type="password" id="novo-usuario-senha-confirmar" class="form-control" placeholder="Confirme a senha">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Tipo de Usuário</label>
+                <select id="novo-usuario-tipo" class="form-control">
+                    <option value="admin">Administrador</option>
+                    <option value="caixa">Caixa</option>
+                    <option value="cozinha">Cozinha</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button onclick="fecharModalNovoUsuario()" class="btn btn-secondary" style="padding: 0.7rem 1.5rem;">Cancelar</button>
+            <button onclick="criarNovoUsuario()" class="btn btn-primary" style="padding: 0.7rem 1.5rem;">Criar Usuário</button>
         </div>
     </div>
 </div>
@@ -6392,6 +6443,165 @@ function getCookie(name) {
         }
     }
     return cookieValue;
+}
+
+// ========== FUNÇÕES DE GESTÃO DE USUÁRIOS ==========
+
+function toggleMenuAcoesUsuario(event, usuarioId) {
+    event.stopPropagation();
+    
+    // Fechar todos os outros menus
+    document.querySelectorAll('.menu-acoes-dropdown').forEach(menu => {
+        if (menu.id !== `menu-acoes-usuario-${usuarioId}`) {
+            menu.style.display = 'none';
+        }
+    });
+    
+    // Toggle do menu clicado
+    const menu = document.getElementById(`menu-acoes-usuario-${usuarioId}`);
+    const isVisible = menu.style.display === 'block';
+    menu.style.display = isVisible ? 'none' : 'block';
+}
+
+function abrirModalNovoUsuario() {
+    const modal = document.getElementById('modal-novo-usuario');
+    // Limpar campos
+    document.getElementById('novo-usuario-username').value = '';
+    document.getElementById('novo-usuario-email').value = '';
+    document.getElementById('novo-usuario-senha').value = '';
+    document.getElementById('novo-usuario-senha-confirmar').value = '';
+    document.getElementById('novo-usuario-tipo').value = 'caixa';
+    modal.style.display = 'block';
+}
+
+function fecharModalNovoUsuario() {
+    const modal = document.getElementById('modal-novo-usuario');
+    modal.style.display = 'none';
+}
+
+async function criarNovoUsuario() {
+    const username = document.getElementById('novo-usuario-username').value.trim();
+    const email = document.getElementById('novo-usuario-email').value.trim();
+    const senha = document.getElementById('novo-usuario-senha').value;
+    const senhaConfirmar = document.getElementById('novo-usuario-senha-confirmar').value;
+    const tipo = document.getElementById('novo-usuario-tipo').value;
+    
+    // Validações
+    if (!username) {
+        showToast('❌ Nome de usuário é obrigatório!', 'error');
+        return;
+    }
+    
+    if (!senha) {
+        showToast('❌ Senha é obrigatória!', 'error');
+        return;
+    }
+    
+    if (senha !== senhaConfirmar) {
+        showToast('❌ As senhas não coincidem!', 'error');
+        return;
+    }
+    
+    if (senha.length < 4) {
+        showToast('❌ A senha deve ter pelo menos 4 caracteres!', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/caixa/usuarios/criar/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                username: username,
+                email: email,
+                password: senha,
+                tipo: tipo
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast('✅ Usuário criado com sucesso!', 'success');
+            fecharModalNovoUsuario();
+            location.reload();
+        } else {
+            showToast('❌ Erro: ' + (data.error || 'Erro desconhecido'), 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('❌ Erro ao criar usuário!', 'error');
+    }
+}
+
+async function toggleAtivarUsuario(usuarioId, estaAtivo) {
+    const acao = estaAtivo ? 'inativar' : 'ativar';
+    const titulo = estaAtivo ? '🚫 Inativar Usuário' : '✅ Ativar Usuário';
+    const mensagem = estaAtivo ? 
+        'Tem certeza que deseja inativar este usuário? Ele não poderá mais acessar o sistema.' : 
+        'Deseja ativar este usuário novamente?';
+    
+    abrirModalConfirmacao(titulo, mensagem, async () => {
+        try {
+            const response = await fetch(`/caixa/usuarios/${usuarioId}/toggle-ativo/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast(`✅ Usuário ${acao === 'inativar' ? 'inativado' : 'ativado'} com sucesso!`, 'success');
+                location.reload();
+            } else {
+                showToast('❌ Erro: ' + (data.error || 'Erro desconhecido'), 'error');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            showToast('❌ Erro ao alterar status do usuário!', 'error');
+        }
+    });
+}
+
+async function excluirUsuario(usuarioId, usuarioNome) {
+    abrirModalConfirmacao(
+        '🗑️ Excluir Usuário',
+        `Tem certeza que deseja excluir o usuário "${usuarioNome}"? Esta ação é irreversível!`,
+        async () => {
+            try {
+                const response = await fetch(`/caixa/usuarios/${usuarioId}/excluir/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('✅ Usuário excluído com sucesso!', 'success');
+                    location.reload();
+                } else {
+                    showToast('❌ Erro: ' + (data.error || 'Erro desconhecido'), 'error');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showToast('❌ Erro ao excluir usuário!', 'error');
+            }
+        }
+    );
+}
+
+function abrirModalEditarUsuario(usuarioId) {
+    // Por enquanto, redireciona para o admin do Django
+    // Futuramente pode ser implementado um modal customizado
+    window.location.href = `/admin/authentication/usuario/${usuarioId}/change/`;
 }
 
 // VARIÁVEIS GLOBAIS PARA EDIÇÃO

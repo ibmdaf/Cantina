@@ -49,4 +49,9 @@ urlpatterns = [
     
     # URL para dados de relatórios
     path('relatorios/dados/', views.relatorios_dados, name='relatorios_dados'),
+    
+    # URLs para gestão de usuários
+    path('usuarios/criar/', views.criar_usuario, name='criar_usuario'),
+    path('usuarios/<int:usuario_id>/toggle-ativo/', views.toggle_ativo_usuario, name='toggle_ativo_usuario'),
+    path('usuarios/<int:usuario_id>/excluir/', views.excluir_usuario, name='excluir_usuario'),
 ]
