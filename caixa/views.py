@@ -1432,12 +1432,20 @@ def criar_usuario(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            username = data.get('username', '').strip()
+            nome = data.get('nome', '').strip()
+            username = data.get('username', '').strip().lower()
             password = data.get('password', '')
             tipo = data.get('tipo', 'caixa')
             
+            if not nome:
+                return JsonResponse({'success': False, 'error': 'Nome é obrigatório'})
+            
             if not username:
                 return JsonResponse({'success': False, 'error': 'Nome de usuário é obrigatório'})
+            
+            # Validar que username não tem espaços
+            if ' ' in username:
+                return JsonResponse({'success': False, 'error': 'Nome de usuário não pode conter espaços'})
             
             if not password:
                 return JsonResponse({'success': False, 'error': 'Senha é obrigatória'})
@@ -1451,6 +1459,7 @@ def criar_usuario(request):
             usuario = Usuario.objects.create_user(
                 username=username,
                 password=password,
+                first_name=nome,
                 tipo=tipo,
                 empresa=request.user.empresa
             )
@@ -1523,6 +1532,7 @@ def buscar_usuario(request, usuario_id):
             'success': True,
             'usuario': {
                 'id': usuario.id,
+                'nome': usuario.first_name,
                 'username': usuario.username,
                 'tipo': usuario.tipo,
                 'is_active': usuario.is_active
@@ -1540,18 +1550,27 @@ def editar_usuario(request, usuario_id):
             usuario = get_object_or_404(Usuario, id=usuario_id, empresa=request.user.empresa)
             
             data = json.loads(request.body)
-            username = data.get('username', '').strip()
+            nome = data.get('nome', '').strip()
+            username = data.get('username', '').strip().lower()
             password = data.get('password', '')
             tipo = data.get('tipo', usuario.tipo)
             
+            if not nome:
+                return JsonResponse({'success': False, 'error': 'Nome é obrigatório'})
+            
             if not username:
                 return JsonResponse({'success': False, 'error': 'Nome de usuário é obrigatório'})
+            
+            # Validar que username não tem espaços
+            if ' ' in username:
+                return JsonResponse({'success': False, 'error': 'Nome de usuário não pode conter espaços'})
             
             # Verificar se username já existe (exceto o próprio usuário)
             if Usuario.objects.filter(username=username).exclude(id=usuario_id).exists():
                 return JsonResponse({'success': False, 'error': 'Nome de usuário já existe'})
             
             # Atualizar dados
+            usuario.first_name = nome
             usuario.username = username
             usuario.tipo = tipo
             
