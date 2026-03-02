@@ -125,6 +125,9 @@
                     <span style="color: var(--btn-primary); font-weight: 600;" id="total-disponiveis">0</span> itens disponíveis
                 </span>
                 <button class="btn-action" onclick="limparSelecaoCardapio()">🗑️ Limpar Seleção</button>
+                <button id="btn-publicar-cardapio" class="btn-action" onclick="abrirModalPublicarCardapio()" disabled style="background: #28a745; opacity: 0.5; cursor: not-allowed;">
+                    📢 Publicar
+                </button>
             </div>
             
             <div class="table-wrapper-fixed-header">
@@ -148,13 +151,13 @@
                                 <td>R$ {{ produto.preco }}</td>
                                 <td>
                                     <label class="toggle-switch">
-                                        <input type="checkbox" data-produto-id="{{ produto.id }}" {% if produto.ativo %}checked{% endif %} onchange="atualizarDisponibilidade(this)">
+                                        <input type="checkbox" data-produto-id="{{ produto.id }}" {% if produto.ativo %}checked{% endif %} onchange="marcarMudancaCardapio(); atualizarDisponibilidadeLocal(this)">
                                         <span class="toggle-slider"></span>
                                     </label>
                                 </td>
                                 <td>
                                     <label class="toggle-switch">
-                                        <input type="checkbox" data-produto-id="{{ produto.id }}" onchange="toggleMostrarEstoque(this)">
+                                        <input type="checkbox" data-produto-id="{{ produto.id }}" onchange="marcarMudancaCardapio(); toggleMostrarEstoqueLocal(this)">
                                         <span class="toggle-slider"></span>
                                     </label>
                                 </td>
@@ -688,6 +691,46 @@
         <div style="display: flex; gap: 1rem; justify-content: flex-end;">
             <button onclick="fecharModalConfirmacao()" class="btn btn-secondary" style="padding: 0.7rem 1.5rem;">Cancelar</button>
             <button id="modal-confirmacao-btn-ok" onclick="confirmarAcaoModal()" class="btn btn-primary" style="padding: 0.7rem 1.5rem;">OK</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PUBLICAR CARDÁPIO -->
+<div id="modal-publicar-cardapio" class="modal" onclick="fecharModalSeForaDoConteudo(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 450px;">
+        <span class="modal-close" onclick="fecharModalPublicarCardapio(false)">&times;</span>
+        <h2 style="color: #28a745;">📢 Publicar Alterações</h2>
+        <div style="margin: 1.5rem 0;">
+            <p style="color: var(--text-secondary); line-height: 1.6;">
+                Deseja publicar as alterações do cardápio?
+            </p>
+            <p style="color: var(--text-secondary); margin-top: 1rem; line-height: 1.6;">
+                As mudanças serão aplicadas imediatamente na <strong style="color: var(--btn-primary);">Visão Cliente</strong> e na aba <strong style="color: var(--btn-primary);">Novo Pedido</strong>.
+            </p>
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button onclick="fecharModalPublicarCardapio(false)" class="btn btn-secondary" style="padding: 0.7rem 1.5rem;">Cancelar</button>
+            <button onclick="publicarAlteracoesCardapio()" class="btn btn-primary" style="padding: 0.7rem 1.5rem; background: #28a745;">Publicar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL MUDANÇAS NÃO SALVAS -->
+<div id="modal-mudancas-nao-salvas" class="modal" onclick="fecharModalSeForaDoConteudo(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 450px;">
+        <span class="modal-close" onclick="fecharModalMudancasNaoSalvas()">&times;</span>
+        <h2 style="color: #F4A23A;">⚠️ Mudanças Não Publicadas</h2>
+        <div style="margin: 1.5rem 0;">
+            <p style="color: var(--text-secondary); line-height: 1.6;">
+                Você tem alterações no cardápio que não foram publicadas.
+            </p>
+            <p style="color: var(--text-secondary); margin-top: 1rem; line-height: 1.6;">
+                O que deseja fazer?
+            </p>
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button onclick="descartarMudancasCardapio()" class="btn btn-secondary" style="padding: 0.7rem 1.5rem;">Descartar</button>
+            <button onclick="publicarEContinuar()" class="btn btn-primary" style="padding: 0.7rem 1.5rem; background: #28a745;">Publicar</button>
         </div>
     </div>
 </div>
@@ -4901,6 +4944,18 @@ input:checked + .toggle-slider:before {
 <script>
 // Função showTab - Troca de abas sem reload (mantém fullscreen)
 function showTab(tabName) {
+    // Verificar se há mudanças pendentes no cardápio
+    if (mudancasCardapioPendentes) {
+        const abaAtual = document.querySelector('.tab-content.active');
+        if (abaAtual && abaAtual.id === 'tab-cardapio') {
+            // Armazenar aba destino e abrir modal
+            abaDestino = tabName;
+            const modal = document.getElementById('modal-mudancas-nao-salvas');
+            modal.style.display = 'block';
+            return; // Não trocar de aba ainda
+        }
+    }
+    
     // Esconder todas as abas
     const allTabs = document.querySelectorAll('.tab-content');
     allTabs.forEach(tab => tab.classList.remove('active'));
@@ -4935,6 +4990,11 @@ function showTab(tabName) {
     if (urls[tabName]) {
         history.pushState({tab: tabName}, '', urls[tabName]);
     }
+}
+
+// Função auxiliar para trocar aba (usada após publicar)
+function trocarAba(tabName) {
+    showTab(tabName);
 }
 
 // Lidar com navegação do navegador (botões voltar/avançar)
@@ -5110,6 +5170,121 @@ function confirmarAcaoModal() {
         acaoConfirmacaoCallback();
     }
     fecharModalConfirmacao();
+}
+
+// ========== CONTROLE DE MUDANÇAS DO CARDÁPIO ==========
+
+let mudancasCardapioPendentes = false;
+let mudancasCardapio = {
+    disponibilidade: {},
+    estoque: {}
+};
+let abaDestino = null;
+
+function marcarMudancaCardapio() {
+    mudancasCardapioPendentes = true;
+    const btnPublicar = document.getElementById('btn-publicar-cardapio');
+    btnPublicar.disabled = false;
+    btnPublicar.style.opacity = '1';
+    btnPublicar.style.cursor = 'pointer';
+}
+
+function atualizarDisponibilidadeLocal(checkbox) {
+    const produtoId = checkbox.dataset.produtoId;
+    const disponivel = checkbox.checked;
+    mudancasCardapio.disponibilidade[produtoId] = disponivel;
+}
+
+function toggleMostrarEstoqueLocal(checkbox) {
+    const produtoId = checkbox.dataset.produtoId;
+    const mostrar = checkbox.checked;
+    
+    // Se está habilitando "Mostrar Estoque", marcar automaticamente "Disponível Hoje"
+    if (mostrar) {
+        const row = checkbox.closest('tr');
+        const checkboxDisponivel = row.querySelector('td:nth-child(3) input[type="checkbox"]');
+        
+        if (checkboxDisponivel && !checkboxDisponivel.checked) {
+            checkboxDisponivel.checked = true;
+            marcarMudancaCardapio();
+            atualizarDisponibilidadeLocal(checkboxDisponivel);
+        }
+    }
+    
+    // Salvar estado no localStorage
+    localStorage.setItem(`mostrar_estoque_${produtoId}`, mostrar);
+    mudancasCardapio.estoque[produtoId] = mostrar;
+}
+
+function abrirModalPublicarCardapio() {
+    const modal = document.getElementById('modal-publicar-cardapio');
+    modal.style.display = 'block';
+}
+
+function fecharModalPublicarCardapio(limpar = true) {
+    const modal = document.getElementById('modal-publicar-cardapio');
+    modal.style.display = 'none';
+}
+
+async function publicarAlteracoesCardapio() {
+    fecharModalPublicarCardapio();
+    
+    try {
+        // Aplicar mudanças de disponibilidade
+        for (const [produtoId, disponivel] of Object.entries(mudancasCardapio.disponibilidade)) {
+            await fetch('/caixa/atualizar-disponibilidade/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    produto_id: produtoId,
+                    disponivel: disponivel
+                })
+            });
+        }
+        
+        // Recarregar produtos na aba Novo Pedido
+        await recarregarProdutosNovoPedido();
+        
+        // Limpar mudanças pendentes
+        mudancasCardapioPendentes = false;
+        mudancasCardapio = { disponibilidade: {}, estoque: {} };
+        
+        const btnPublicar = document.getElementById('btn-publicar-cardapio');
+        btnPublicar.disabled = true;
+        btnPublicar.style.opacity = '0.5';
+        btnPublicar.style.cursor = 'not-allowed';
+        
+        showToast('✅ Alterações publicadas com sucesso!', 'success');
+        
+    } catch (error) {
+        console.error('Erro ao publicar alterações:', error);
+        showToast('❌ Erro ao publicar alterações!', 'error');
+    }
+}
+
+function fecharModalMudancasNaoSalvas() {
+    const modal = document.getElementById('modal-mudancas-nao-salvas');
+    modal.style.display = 'none';
+    abaDestino = null;
+}
+
+function descartarMudancasCardapio() {
+    // Recarregar a página para descartar mudanças
+    location.reload();
+}
+
+async function publicarEContinuar() {
+    fecharModalMudancasNaoSalvas();
+    await publicarAlteracoesCardapio();
+    
+    // Navegar para a aba destino
+    if (abaDestino) {
+        trocarAba(abaDestino);
+        abaDestino = null;
+    }
 }
 
 async function atualizarPedidosAtivos() {
@@ -5938,8 +6113,8 @@ function limparSelecaoCardapio() {
             checkboxesDisponiveis.forEach(checkbox => {
                 if (checkbox.checked) {
                     checkbox.checked = false;
-                    // Disparar o evento de mudança para salvar no backend
-                    atualizarDisponibilidade(checkbox);
+                    marcarMudancaCardapio();
+                    atualizarDisponibilidadeLocal(checkbox);
                 }
             });
             
@@ -5947,8 +6122,8 @@ function limparSelecaoCardapio() {
             checkboxesMostrarEstoque.forEach(checkbox => {
                 if (checkbox.checked) {
                     checkbox.checked = false;
-                    // Disparar o evento de mudança
-                    toggleMostrarEstoque(checkbox);
+                    marcarMudancaCardapio();
+                    toggleMostrarEstoqueLocal(checkbox);
                 }
             });
             
@@ -5956,7 +6131,7 @@ function limparSelecaoCardapio() {
             atualizarContadorDisponiveis();
             
             // Feedback visual
-            showToast('✅ Seleção limpa com sucesso!', 'success');
+            showToast('✅ Seleção limpa! Clique em "Publicar" para aplicar as mudanças.', 'success');
         }
     );
 }
@@ -5992,9 +6167,6 @@ async function atualizarDisponibilidade(checkbox) {
             }
             // Atualizar contador de itens disponíveis
             atualizarContadorDisponiveis();
-            
-            // Recarregar produtos na aba Novo Pedido
-            await recarregarProdutosNovoPedido();
         } else {
             showToast('Erro ao atualizar disponibilidade: ' + (result.error || 'Erro desconhecido'));
             // Reverter checkbox
@@ -6005,61 +6177,6 @@ async function atualizarDisponibilidade(checkbox) {
         showToast('Erro ao atualizar disponibilidade!', 'error');
         // Reverter checkbox
         checkbox.checked = !disponivel;
-    }
-}
-
-async function recarregarProdutosNovoPedido() {
-    try {
-        const empresaId = {{ user.empresa.id }};
-        const response = await fetch(`/caixa/api/produtos-disponiveis/${empresaId}/`);
-        const data = await response.json();
-        
-        if (data.success && data.produtos) {
-            const grid = document.querySelector('.produtos-cardapio-grid');
-            if (!grid) return;
-            
-            grid.innerHTML = '';
-            
-            data.produtos.forEach(produto => {
-                const card = document.createElement('div');
-                card.className = 'produto-card-cardapio';
-                card.dataset.nome = produto.nome.toLowerCase();
-                card.dataset.codigo = produto.id;
-                card.dataset.categoria = produto.categoria ? produto.categoria.nome : '';
-                card.dataset.isCombo = produto.is_combo ? 'true' : 'false';
-                
-                if (produto.is_combo) {
-                    card.onclick = function() {
-                        abrirModalSelecaoCombo(produto.combo_id, produto.nome, produto.preco);
-                    };
-                } else {
-                    card.onclick = function() {
-                        adicionarProduto(produto.id, produto.nome, produto.preco);
-                    };
-                }
-                
-                card.innerHTML = `
-                    <div class="produto-card-info">
-                        <h4>${produto.is_combo ? '🎁 ' : ''}${produto.nome}</h4>
-                        <span class="produto-codigo">#${String(produto.id).padStart(3, '0')}</span>
-                    </div>
-                    <div class="produto-card-preco">R$ ${parseFloat(produto.preco).toFixed(2)}</div>
-                    ${produto.quantidade_estoque > 0 && !produto.is_combo ? 
-                        `<span class="produto-badge-estoque" data-produto-id="${produto.id}" style="display: none;">${produto.quantidade_estoque} un</span>` 
-                        : ''}
-                `;
-                
-                grid.appendChild(card);
-            });
-            
-            // Restaurar estado dos badges de estoque
-            restaurarEstadoMostrarEstoque();
-            
-            // Aplicar filtros atuais
-            filtrarCardapio();
-        }
-    } catch (error) {
-        console.error('Erro ao recarregar produtos:', error);
     }
 }
 
@@ -6122,9 +6239,6 @@ function toggleMostrarEstoque(checkbox) {
     if (badge) {
         badge.style.display = mostrar ? 'block' : 'none';
     }
-    
-    // Recarregar produtos na aba Novo Pedido para atualizar badges
-    recarregarProdutosNovoPedido();
 }
 
 function restaurarEstadoMostrarEstoque() {
