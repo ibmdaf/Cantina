@@ -17,7 +17,9 @@
                     <a href="{% url 'caixa_novo_pedido' %}" class="tab-btn {% if aba_ativa == 'novo-pedido' %}active{% endif %}" onclick="event.preventDefault(); showTab('novo-pedido');">🛒 Pedido</a>
                     <a href="{% url 'caixa_cardapio_dia' %}" class="tab-btn {% if aba_ativa == 'cardapio' %}active{% endif %}" onclick="event.preventDefault(); showTab('cardapio');">📋 Cardápio</a>
                     <a href="{% url 'caixa_estoque' %}" class="tab-btn {% if aba_ativa == 'estoque' %}active{% endif %}" onclick="event.preventDefault(); showTab('estoque');">📦 Estoque</a>
+                    {% if user.tipo in ['admin', 'gerente'] %}
                     <a href="{% url 'caixa_relatorios' %}" class="tab-btn {% if aba_ativa == 'relatorios' %}active{% endif %}" onclick="event.preventDefault(); showTab('relatorios');">📊 Relatórios</a>
+                    {% endif %}
                     <a href="{% url 'caixa_links' %}" class="tab-btn {% if aba_ativa == 'links' %}active{% endif %}" onclick="event.preventDefault(); showTab('links');">🔗 Links</a>
                     {% if user.tipo != 'caixa' %}
                     <a href="{% url 'caixa_usuarios' %}" class="tab-btn {% if aba_ativa == 'usuarios' %}active{% endif %}" onclick="event.preventDefault(); showTab('usuarios');">👥 Usuários</a>

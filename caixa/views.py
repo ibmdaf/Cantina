@@ -14,7 +14,7 @@ def caixa_dashboard(request, aba='novo-pedido'):
         return redirect('cozinha_dashboard')
     
     # Controle de acesso: operador de caixa não pode acessar abas restritas
-    if request.user.tipo == 'caixa' and aba in ['configuracoes', 'usuarios']:
+    if request.user.tipo == 'caixa' and aba in ['configuracoes', 'usuarios', 'relatorios']:
         return redirect('caixa_novo_pedido')
     
     # Controle de acesso: gerente não pode acessar configurações
