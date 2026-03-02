@@ -261,12 +261,17 @@
             
             <!-- Filtros de Período -->
             <div class="relatorios-filtros">
-                <div class="filtros-rapidos">
-                    <button class="btn-filtro-rapido active" onclick="aplicarFiltroRapido('hoje')">Hoje</button>
-                    <button class="btn-filtro-rapido" onclick="aplicarFiltroRapido('ontem')">Ontem</button>
-                    <button class="btn-filtro-rapido" onclick="aplicarFiltroRapido('semana')">Esta Semana</button>
-                    <button class="btn-filtro-rapido" onclick="aplicarFiltroRapido('mes')">Este Mês</button>
-                    <button class="btn-filtro-rapido" onclick="aplicarFiltroRapido('personalizado')">📅 Personalizado</button>
+                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                    <div class="filtros-rapidos">
+                        <button class="btn-filtro-rapido active" onclick="aplicarFiltroRapido('hoje')">Hoje</button>
+                        <button class="btn-filtro-rapido" onclick="aplicarFiltroRapido('ontem')">Ontem</button>
+                        <button class="btn-filtro-rapido" onclick="aplicarFiltroRapido('semana')">Esta Semana</button>
+                        <button class="btn-filtro-rapido" onclick="aplicarFiltroRapido('mes')">Este Mês</button>
+                        <button class="btn-filtro-rapido" onclick="aplicarFiltroRapido('personalizado')">📅 Personalizado</button>
+                    </div>
+                    <button class="btn-action" onclick="carregarRelatorios()" style="background: #28a745; margin-left: auto;">
+                        🔍 Pesquisar
+                    </button>
                 </div>
                 
                 <div class="filtros-personalizados" id="filtros-personalizados" style="display: none;">
@@ -279,7 +284,6 @@
                             <label class="form-label">Data Fim</label>
                             <input type="date" id="data-fim" class="form-control">
                         </div>
-                        <button class="btn-action" onclick="carregarRelatorios()">� Buscar</button>
                     </div>
                 </div>
             </div>
