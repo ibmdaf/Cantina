@@ -190,7 +190,57 @@ Documentação completa do sistema de combos.
 
 ---
 
-### 11. 📚 [INDICE.md](INDICE.md)
+### 11. 👥 [DOCUMENTACAO_GESTAO_USUARIOS.md](DOCUMENTACAO_GESTAO_USUARIOS.md)
+Documentação completa do sistema de gestão de usuários.
+
+**Conteúdo:**
+- Tipos de usuários e permissões
+- Criar, editar, ativar/inativar e excluir usuários
+- Tabela de usuários com scroll
+- API endpoints
+- Modelo de dados
+- Script de atualização de nomes
+- Boas práticas e troubleshooting
+
+**Para quem:** Administradores, gestores, desenvolvedores
+
+---
+
+### 12. 🛠️ [DOCUMENTACAO_SCRIPTS_UTILITARIOS.md](DOCUMENTACAO_SCRIPTS_UTILITARIOS.md)
+Documentação de todos os scripts utilitários do sistema.
+
+**Conteúdo:**
+- atualizar_nomes_usuarios.py
+- criar_categoria_combo.py
+- limpar_categorias_inativas.py
+- verificar_categorias.py
+- verificar_produtos_inativos.py
+- populate_db.py
+- restart_server.py
+- start.sh
+- Boas práticas e troubleshooting
+
+**Para quem:** Desenvolvedores, administradores de sistema
+
+---
+
+### 13. 🔐 [DOCUMENTACAO_PERMISSOES_ACESSO.md](DOCUMENTACAO_PERMISSOES_ACESSO.md)
+Documentação completa do sistema de permissões e controle de acesso.
+
+**Conteúdo:**
+- Tipos de usuário e permissões detalhadas
+- Matriz de permissões completa
+- Implementação de segurança (backend e frontend)
+- Regras de segurança e validações
+- Fluxo de autenticação
+- Customização de permissões
+- Boas práticas e troubleshooting
+
+**Para quem:** Desenvolvedores, administradores, auditores de segurança
+
+---
+
+### 14. 📚 [INDICE.md](INDICE.md)
 Este arquivo - índice de toda documentação.
 
 **Para quem:** Todos - ponto de partida
@@ -290,19 +340,22 @@ Este arquivo - índice de toda documentação.
 
 ### Documentação (Markdown)
 ```
-├── INDICE.md                          # Este arquivo
-├── README.md                          # Documentação principal
-├── INICIO_RAPIDO.md                   # Guia de início rápido
-├── GUIA_URLS.md                       # Guia de URLs
-├── GUIA_VISUAL.md                     # Guia de identidade visual
-├── ESTRUTURA_BD.md                    # Estrutura do banco
-├── CUSTOMIZACAO.md                    # Guia de customização
-├── TESTES.md                          # Guia de testes
-├── DEPLOY.md                          # Guia de deploy
-├── RESUMO_EXECUTIVO.md                # Resumo executivo
-├── DOCUMENTACAO_SISTEMA_COMBOS.md     # Sistema de combos
-├── DOCUMENTACAO_FRONTEND_CAIXA.md     # Frontend do caixa
-└── DOCUMENTACAO_FRONTEND_PEDIDOS.md   # Frontend de pedidos
+├── INDICE.md                                # Este arquivo
+├── README.md                                # Documentação principal
+├── INICIO_RAPIDO.md                         # Guia de início rápido
+├── GUIA_URLS.md                             # Guia de URLs
+├── GUIA_VISUAL.md                           # Guia de identidade visual
+├── ESTRUTURA_BD.md                          # Estrutura do banco
+├── CUSTOMIZACAO.md                          # Guia de customização
+├── TESTES.md                                # Guia de testes
+├── DEPLOY.md                                # Guia de deploy
+├── RESUMO_EXECUTIVO.md                      # Resumo executivo
+├── DOCUMENTACAO_SISTEMA_COMBOS.md           # Sistema de combos
+├── DOCUMENTACAO_FRONTEND_CAIXA.md           # Frontend do caixa
+├── DOCUMENTACAO_FRONTEND_PEDIDOS.md         # Frontend de pedidos
+├── DOCUMENTACAO_GESTAO_USUARIOS.md          # Gestão de usuários
+├── DOCUMENTACAO_SCRIPTS_UTILITARIOS.md      # Scripts utilitários
+└── DOCUMENTACAO_PERMISSOES_ACESSO.md        # Permissões e acesso
 ```
 
 ### Código Python
@@ -433,6 +486,9 @@ Use este checklist para acompanhar seu progresso:
 - [ ] DOCUMENTACAO_SISTEMA_COMBOS.md
 - [ ] DOCUMENTACAO_FRONTEND_CAIXA.md
 - [ ] DOCUMENTACAO_FRONTEND_PEDIDOS.md
+- [ ] DOCUMENTACAO_GESTAO_USUARIOS.md
+- [ ] DOCUMENTACAO_SCRIPTS_UTILITARIOS.md
+- [ ] DOCUMENTACAO_PERMISSOES_ACESSO.md
 
 ---
 
