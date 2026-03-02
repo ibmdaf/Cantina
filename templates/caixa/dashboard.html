@@ -241,7 +241,7 @@
                                         <button onclick="toggleAtivarItem({{ produto.id }}, {{ produto.ativo|yesno:'true,false' }})">
                                             {% if produto.ativo %}🚫 Inativar{% else %}✅ Ativar{% endif %}
                                         </button>
-                                        <button onclick="abrirModalExcluirItem({{ produto.id }}, '{{ produto.nome|escapejs }}')">🗑️ Excluir</button>
+                                        <button onclick="verificarPermissaoExcluir({{ produto.id }}, '{{ produto.nome|escapejs }}')">🗑️ Excluir</button>
                                     </div>
                                 </td>
                             </tr>
@@ -655,6 +655,23 @@
             </div>
         </div>
         <button onclick="fecharModalLinkCozinha()" class="btn btn-primary" style="margin-top: 1.5rem; padding: 0.7rem 2rem;">Fechar</button>
+    </div>
+</div>
+
+<!-- MODAL PERMISSÃO NEGADA -->
+<div id="modal-permissao-negada" class="modal" onclick="fecharModalSeForaDoConteudo(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 450px;">
+        <span class="modal-close" onclick="fecharModalPermissaoNegada()">&times;</span>
+        <h2 style="color: #F4A23A;">🔒 Permissão Necessária</h2>
+        <div style="margin: 1.5rem 0;">
+            <p style="color: var(--text-secondary); line-height: 1.6;">
+                Apenas usuários com perfil <strong style="color: var(--btn-primary);">Administrador</strong> podem excluir itens ou combos do estoque.
+            </p>
+            <p style="color: var(--text-secondary); margin-top: 1rem; line-height: 1.6;">
+                Para inativar um item temporariamente, use a opção <strong style="color: var(--btn-primary);">🚫 Inativar</strong>.
+            </p>
+        </div>
+        <button onclick="fecharModalPermissaoNegada()" class="btn btn-primary" style="padding: 0.7rem 2rem;">Entendi</button>
     </div>
 </div>
 
@@ -5026,6 +5043,27 @@ function copiarLinkCozinha() {
     input.select();
     document.execCommand('copy');
     showToast('✅ Link copiado!', 'success');
+}
+
+// ========== FUNÇÕES DE VERIFICAÇÃO DE PERMISSÃO ==========
+
+// Variável global com tipo de usuário
+const userTipo = '{{ user.tipo }}';
+
+function verificarPermissaoExcluir(produtoId, produtoNome) {
+    if (userTipo !== 'admin') {
+        // Mostrar modal de permissão negada
+        const modal = document.getElementById('modal-permissao-negada');
+        modal.style.display = 'block';
+    } else {
+        // Usuário é admin, pode excluir
+        abrirModalExcluirItem(produtoId, produtoNome);
+    }
+}
+
+function fecharModalPermissaoNegada() {
+    const modal = document.getElementById('modal-permissao-negada');
+    modal.style.display = 'none';
 }
 
 async function atualizarPedidosAtivos() {
