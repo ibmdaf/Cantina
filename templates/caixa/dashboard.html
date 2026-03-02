@@ -377,7 +377,7 @@
                     <div class="link-icon">👨‍🍳</div>
                     <h3>Cozinha</h3>
                     <p>Gestão de pedidos na cozinha</p>
-                    <a href="{% url 'cozinha_dashboard' %}" target="_blank" class="btn-action">Abrir</a>
+                    <button onclick="abrirModalLinkCozinha()" class="btn-action">Ver QR Code</button>
                 </div>
 
                 <div class="link-card">
@@ -637,6 +637,24 @@
         <div id="qrcode-container"></div>
         <p id="qrcode-url"></p>
         <button onclick="fecharModal()" class="btn btn-primary" style="margin-top: 1.5rem; padding: 0.7rem 2rem;">Fechar</button>
+    </div>
+</div>
+
+<!-- MODAL LINK COZINHA -->
+<div id="modal-link-cozinha" class="modal" onclick="fecharModalSeForaDoConteudo(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <span class="modal-close" onclick="fecharModalLinkCozinha()">&times;</span>
+        <h2>👨‍🍳 Tela da Cozinha</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Escaneie o QR Code ou copie o link</p>
+        <div id="qrcode-cozinha-container" style="display: flex; justify-content: center; margin: 1.5rem 0;"></div>
+        <div style="margin-top: 1.5rem;">
+            <label class="form-label">Link de Acesso:</label>
+            <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="link-cozinha-url" readonly class="form-control" style="flex: 1;">
+                <button onclick="copiarLinkCozinha()" class="btn-action" style="padding: 0.5rem 1rem;">📋 Copiar</button>
+            </div>
+        </div>
+        <button onclick="fecharModalLinkCozinha()" class="btn btn-primary" style="margin-top: 1.5rem; padding: 0.7rem 2rem;">Fechar</button>
     </div>
 </div>
 
@@ -4968,6 +4986,46 @@ function fecharModal() {
     
     // Atualizar apenas a sidebar de pedidos ativos sem recarregar a página
     atualizarPedidosAtivos();
+}
+
+// ========== FUNÇÕES DO MODAL LINK COZINHA ==========
+
+function abrirModalLinkCozinha() {
+    const modal = document.getElementById('modal-link-cozinha');
+    const container = document.getElementById('qrcode-cozinha-container');
+    const inputUrl = document.getElementById('link-cozinha-url');
+    
+    // Construir URL completa
+    const url = window.location.origin + '{% url "cozinha_dashboard" %}';
+    inputUrl.value = url;
+    
+    // Limpar container anterior
+    container.innerHTML = '';
+    
+    // Gerar QR Code
+    new QRCode(container, {
+        text: url,
+        width: 256,
+        height: 256,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    
+    // Mostrar modal
+    modal.style.display = 'block';
+}
+
+function fecharModalLinkCozinha() {
+    const modal = document.getElementById('modal-link-cozinha');
+    modal.style.display = 'none';
+}
+
+function copiarLinkCozinha() {
+    const input = document.getElementById('link-cozinha-url');
+    input.select();
+    document.execCommand('copy');
+    showToast('✅ Link copiado!', 'success');
 }
 
 async function atualizarPedidosAtivos() {
