@@ -1343,7 +1343,12 @@
 }
 
 .modal-editar-dados .form-group {
-    margin-bottom: 0.4rem;
+    margin-bottom: 0;
+    margin-top: 1.5rem;
+}
+
+.modal-editar-dados .form-group:first-child {
+    margin-top: 0;
 }
 
 .modal-editar-dados .form-label {
@@ -1642,13 +1647,14 @@
 .modal-produto-coluna-direita {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 1.5rem;
 }
 
 .modal-produto-coluna-esquerda .form-group,
 .modal-produto-coluna-direita .form-group {
     display: flex;
     flex-direction: column;
+    gap: 0.3rem;
 }
 
 .modal-produto-coluna-esquerda .form-row-inline {
@@ -1659,13 +1665,14 @@
 .modal-produto-coluna-esquerda .form-row-inline .form-group {
     display: flex;
     flex-direction: column;
+    gap: 0.3rem;
 }
 
 .modal-produto-coluna-esquerda .form-label,
 .modal-produto-coluna-direita .form-label {
     font-size: 0.85rem;
     font-weight: 600;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0;
     color: var(--text-primary);
 }
 
@@ -2682,7 +2689,7 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.6rem;
-    margin-top: 1.2rem;
+    margin-top: 2.2rem;
 }
 
 .form-row:first-child {
@@ -2698,7 +2705,7 @@ body {
     flex-direction: column;
     gap: 0.3rem;
     margin-bottom: 0;
-    margin-top: 1.2rem;
+    margin-top: 2.2rem;
 }
 
 .form-group:first-child {
