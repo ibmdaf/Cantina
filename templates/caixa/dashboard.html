@@ -6734,8 +6734,9 @@ async function abrirModalEditarUsuario(usuarioId) {
     try {
         console.log('Buscando usuário ID:', usuarioId);
         
-        // Buscar dados do usuário
-        const response = await fetch(`/caixa/usuarios/${usuarioId}/`);
+        // Buscar dados do usuário (adicionar timestamp para evitar cache)
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/caixa/usuarios/${usuarioId}/?t=${timestamp}`);
         console.log('Response status:', response.status);
         console.log('Response ok:', response.ok);
         
@@ -6753,21 +6754,42 @@ async function abrirModalEditarUsuario(usuarioId) {
             
             console.log('Valores a preencher:', { nome, username, tipo });
             
-            document.getElementById('editar-usuario-nome').value = nome;
-            document.getElementById('editar-usuario-username').value = username;
-            document.getElementById('editar-usuario-senha').value = '';
-            document.getElementById('editar-usuario-senha-confirmar').value = '';
-            document.getElementById('editar-usuario-tipo').value = tipo;
+            // Garantir que os elementos existem antes de preencher
+            const campoNome = document.getElementById('editar-usuario-nome');
+            const campoUsername = document.getElementById('editar-usuario-username');
+            const campoSenha = document.getElementById('editar-usuario-senha');
+            const campoSenhaConfirmar = document.getElementById('editar-usuario-senha-confirmar');
+            const campoTipo = document.getElementById('editar-usuario-tipo');
+            
+            if (!campoNome || !campoUsername || !campoTipo) {
+                console.error('Campos do modal não encontrados!');
+                showToast('❌ Erro: campos do modal não encontrados!', 'error');
+                return;
+            }
+            
+            campoNome.value = nome;
+            campoUsername.value = username;
+            campoSenha.value = '';
+            campoSenhaConfirmar.value = '';
+            campoTipo.value = tipo;
             
             console.log('Campos após preenchimento:', {
-                nome: document.getElementById('editar-usuario-nome').value,
-                username: document.getElementById('editar-usuario-username').value,
-                tipo: document.getElementById('editar-usuario-tipo').value
+                nome: campoNome.value,
+                username: campoUsername.value,
+                tipo: campoTipo.value
             });
             
             // Abrir modal
             const modal = document.getElementById('modal-editar-usuario');
             modal.style.display = 'block';
+            
+            // Forçar atualização visual
+            setTimeout(() => {
+                campoNome.value = nome;
+                campoUsername.value = username;
+                campoTipo.value = tipo;
+                console.log('Valores reforçados após timeout');
+            }, 100);
         } else {
             console.error('Erro na resposta:', data.error);
             showToast('❌ Erro ao carregar usuário: ' + (data.error || 'Erro desconhecido'), 'error');
