@@ -750,9 +750,9 @@
 <div id="modal-novo-usuario" class="modal" onclick="fecharModalSeForaDoConteudo(event)">
     <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 500px;">
         <span class="modal-close" onclick="fecharModalNovoUsuario()">&times;</span>
-        <h2 style="color: var(--btn-primary); margin-bottom: 1.5rem;">👤 Novo Usuário</h2>
+        <h2 style="color: var(--btn-primary);">👤 Novo Usuário</h2>
         
-        <div style="margin-bottom: 1.5rem;">
+        <div style="margin: 1.5rem 0;">
             <div class="form-group">
                 <label class="form-label">Nome</label>
                 <input type="text" id="novo-usuario-nome" class="form-control" placeholder="Digite o nome da pessoa">
@@ -795,9 +795,9 @@
 <div id="modal-editar-usuario" class="modal" onclick="fecharModalSeForaDoConteudo(event)">
     <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 500px;">
         <span class="modal-close" onclick="fecharModalEditarUsuario()">&times;</span>
-        <h2 style="color: var(--btn-primary); margin-bottom: 1.5rem;">✏️ Editar Usuário</h2>
+        <h2 style="color: var(--btn-primary);">✏️ Editar Usuário</h2>
         
-        <div style="margin-bottom: 1.5rem;">
+        <div style="margin: 1.5rem 0;">
             <div class="form-group">
                 <label class="form-label">Nome</label>
                 <input type="text" id="editar-usuario-nome" class="form-control" placeholder="Digite o nome da pessoa">
@@ -2659,8 +2659,13 @@ body {
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    margin-bottom: 1.2rem;
+    gap: 0.3rem;
+    margin-bottom: 0;
+    margin-top: 1.2rem;
+}
+
+.form-group:first-child {
+    margin-top: 0;
 }
 
 .form-label {
