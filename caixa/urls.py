@@ -44,9 +44,6 @@ urlpatterns = [
     # URL para API de pedidos ativos
     path('api/pedidos-ativos/', views.api_pedidos_ativos, name='api_pedidos_ativos'),
     
-    # URL para API de produtos disponíveis (atualização em tempo real)
-    path('api/produtos-disponiveis/<int:empresa_id>/', views.api_produtos_disponiveis, name='api_produtos_disponiveis'),
-    
     # URL para dados de relatórios
     path('relatorios/dados/', views.relatorios_dados, name='relatorios_dados'),
 ]
