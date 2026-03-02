@@ -6695,15 +6695,23 @@ async function abrirModalEditarUsuario(usuarioId) {
         const response = await fetch(`/caixa/usuarios/${usuarioId}/`);
         const data = await response.json();
         
+        console.log('Dados do usuário:', data); // Debug
+        
         if (data.success) {
             usuarioEmEdicao = data.usuario;
             
             // Preencher campos do modal
             document.getElementById('editar-usuario-nome').value = data.usuario.nome || '';
-            document.getElementById('editar-usuario-username').value = data.usuario.username;
+            document.getElementById('editar-usuario-username').value = data.usuario.username || '';
             document.getElementById('editar-usuario-senha').value = '';
             document.getElementById('editar-usuario-senha-confirmar').value = '';
-            document.getElementById('editar-usuario-tipo').value = data.usuario.tipo;
+            document.getElementById('editar-usuario-tipo').value = data.usuario.tipo || 'caixa';
+            
+            console.log('Campos preenchidos:', {
+                nome: document.getElementById('editar-usuario-nome').value,
+                username: document.getElementById('editar-usuario-username').value,
+                tipo: document.getElementById('editar-usuario-tipo').value
+            }); // Debug
             
             // Abrir modal
             const modal = document.getElementById('modal-editar-usuario');
