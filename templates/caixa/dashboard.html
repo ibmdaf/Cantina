@@ -5992,6 +5992,9 @@ async function atualizarDisponibilidade(checkbox) {
             }
             // Atualizar contador de itens disponíveis
             atualizarContadorDisponiveis();
+            
+            // Recarregar produtos na aba Novo Pedido
+            await recarregarProdutosNovoPedido();
         } else {
             showToast('Erro ao atualizar disponibilidade: ' + (result.error || 'Erro desconhecido'));
             // Reverter checkbox
@@ -6002,6 +6005,61 @@ async function atualizarDisponibilidade(checkbox) {
         showToast('Erro ao atualizar disponibilidade!', 'error');
         // Reverter checkbox
         checkbox.checked = !disponivel;
+    }
+}
+
+async function recarregarProdutosNovoPedido() {
+    try {
+        const empresaId = {{ user.empresa.id }};
+        const response = await fetch(`/caixa/api/produtos-disponiveis/${empresaId}/`);
+        const data = await response.json();
+        
+        if (data.success && data.produtos) {
+            const grid = document.querySelector('.produtos-cardapio-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            data.produtos.forEach(produto => {
+                const card = document.createElement('div');
+                card.className = 'produto-card-cardapio';
+                card.dataset.nome = produto.nome.toLowerCase();
+                card.dataset.codigo = produto.id;
+                card.dataset.categoria = produto.categoria ? produto.categoria.nome : '';
+                card.dataset.isCombo = produto.is_combo ? 'true' : 'false';
+                
+                if (produto.is_combo) {
+                    card.onclick = function() {
+                        abrirModalSelecaoCombo(produto.combo_id, produto.nome, produto.preco);
+                    };
+                } else {
+                    card.onclick = function() {
+                        adicionarProduto(produto.id, produto.nome, produto.preco);
+                    };
+                }
+                
+                card.innerHTML = `
+                    <div class="produto-card-info">
+                        <h4>${produto.is_combo ? '🎁 ' : ''}${produto.nome}</h4>
+                        <span class="produto-codigo">#${String(produto.id).padStart(3, '0')}</span>
+                    </div>
+                    <div class="produto-card-preco">R$ ${parseFloat(produto.preco).toFixed(2)}</div>
+                    ${produto.quantidade_estoque > 0 && !produto.is_combo ? 
+                        `<span class="produto-badge-estoque" data-produto-id="${produto.id}" style="display: none;">${produto.quantidade_estoque} un</span>` 
+                        : ''}
+                `;
+                
+                grid.appendChild(card);
+            });
+            
+            // Restaurar estado dos badges de estoque
+            restaurarEstadoMostrarEstoque();
+            
+            // Aplicar filtros atuais
+            filtrarCardapio();
+        }
+    } catch (error) {
+        console.error('Erro ao recarregar produtos:', error);
     }
 }
 
@@ -6064,6 +6122,9 @@ function toggleMostrarEstoque(checkbox) {
     if (badge) {
         badge.style.display = mostrar ? 'block' : 'none';
     }
+    
+    // Recarregar produtos na aba Novo Pedido para atualizar badges
+    recarregarProdutosNovoPedido();
 }
 
 function restaurarEstadoMostrarEstoque() {

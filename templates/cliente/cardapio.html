@@ -560,6 +560,80 @@
             
             // Verificar pedidos finalizados a cada 3 segundos
             setInterval(buscarPedidoAtivo, 3000);
+            
+            // Verificar atualização do cardápio a cada 5 segundos
+            setInterval(atualizarCardapio, 5000);
+        }
+        
+        // Armazenar produtos atuais para comparação
+        let produtosAtuais = [];
+        
+        async function atualizarCardapio() {
+            try {
+                const response = await fetch(`/caixa/api/produtos-disponiveis/${empresaId}/`);
+                const data = await response.json();
+                
+                if (data.success && data.produtos) {
+                    // Verificar se houve mudanças
+                    const produtosNovos = data.produtos;
+                    const mudou = JSON.stringify(produtosAtuais) !== JSON.stringify(produtosNovos);
+                    
+                    if (mudou && produtosAtuais.length > 0) {
+                        // Atualizar o cardápio na tela
+                        renderizarCardapio(produtosNovos);
+                    }
+                    
+                    produtosAtuais = produtosNovos;
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar cardápio:', error);
+            }
+        }
+        
+        function renderizarCardapio(produtos) {
+            const cardapioLista = document.getElementById('cardapio-lista');
+            
+            // Aplicar layout de 2 colunas se houver mais de 10 produtos
+            if (produtos.length > 10) {
+                cardapioLista.classList.add('multi-column');
+            } else {
+                cardapioLista.classList.remove('multi-column');
+            }
+            
+            cardapioLista.innerHTML = '';
+            
+            produtos.forEach(produto => {
+                const produtoDiv = document.createElement('div');
+                produtoDiv.className = 'produto-item';
+                produtoDiv.dataset.produtoId = produto.id;
+                
+                let categoriaHtml = '';
+                if (produto.categoria) {
+                    categoriaHtml = `<span class="produto-categoria">${produto.categoria.emoji} ${produto.categoria.nome}</span>`;
+                }
+                
+                let estoqueHtml = '';
+                if (produto.quantidade_estoque > 0 && !produto.is_combo) {
+                    // Verificar se deve mostrar estoque (localStorage)
+                    const mostrarEstoque = localStorage.getItem(`mostrar_estoque_${produto.id}`) === 'true';
+                    if (mostrarEstoque) {
+                        estoqueHtml = `<span class="produto-estoque">${produto.quantidade_estoque} un</span>`;
+                    }
+                }
+                
+                produtoDiv.innerHTML = `
+                    <div class="produto-info-wrapper">
+                        <div class="produto-info">
+                            <div class="produto-nome">${produto.is_combo ? '🎁 ' : ''}${produto.nome}</div>
+                            ${categoriaHtml}
+                        </div>
+                        ${estoqueHtml}
+                    </div>
+                    <div class="produto-preco">R$ ${parseFloat(produto.preco).toFixed(2)}</div>
+                `;
+                
+                cardapioLista.appendChild(produtoDiv);
+            });
         }
 
         function verificarCarrinho() {
@@ -711,6 +785,15 @@
             if (quantidadeProdutos > 10) {
                 cardapioLista.classList.add('multi-column');
             }
+            
+            // Inicializar lista de produtos atuais
+            const produtosIniciais = [];
+            cardapioLista.querySelectorAll('.produto-item').forEach(item => {
+                produtosIniciais.push({
+                    id: parseInt(item.dataset.produtoId)
+                });
+            });
+            produtosAtuais = produtosIniciais;
             
             iniciarEspelhamento();
             iniciarSincronizacaoQRCode();
