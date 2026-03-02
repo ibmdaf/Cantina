@@ -17,6 +17,10 @@ def caixa_dashboard(request, aba='novo-pedido'):
     if request.user.tipo == 'caixa' and aba in ['configuracoes', 'usuarios']:
         return redirect('caixa_novo_pedido')
     
+    # Controle de acesso: gerente não pode acessar configurações
+    if request.user.tipo == 'gerente' and aba == 'configuracoes':
+        return redirect('caixa_novo_pedido')
+    
     empresa = request.user.empresa
     categorias = Categoria.objects.filter(empresa=empresa, ativo=True)
     

@@ -21,6 +21,8 @@
                     <a href="{% url 'caixa_links' %}" class="tab-btn {% if aba_ativa == 'links' %}active{% endif %}" onclick="event.preventDefault(); showTab('links');">🔗 Links</a>
                     {% if user.tipo != 'caixa' %}
                     <a href="{% url 'caixa_usuarios' %}" class="tab-btn {% if aba_ativa == 'usuarios' %}active{% endif %}" onclick="event.preventDefault(); showTab('usuarios');">👥 Usuários</a>
+                    {% endif %}
+                    {% if user.tipo == 'admin' %}
                     <a href="{% url 'caixa_configuracoes' %}" class="tab-btn {% if aba_ativa == 'configuracoes' %}active{% endif %}" onclick="event.preventDefault(); showTab('configuracoes');">⚙️ Configurações</a>
                     {% endif %}
                 </nav>
