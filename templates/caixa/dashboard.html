@@ -5264,6 +5264,19 @@ async function publicarAlteracoesCardapio() {
         // Recarregar produtos na aba Novo Pedido
         await recarregarProdutosNovoPedido();
         
+        // Notificar outras abas/telas para atualizar (via localStorage)
+        console.log('Notificando outras telas para atualizar...');
+        const notificacao = {
+            tipo: 'cardapio_publicado',
+            timestamp: Date.now()
+        };
+        localStorage.setItem('cardapio_atualizado', JSON.stringify(notificacao));
+        
+        // Limpar a notificação após 100ms para permitir nova notificação futura
+        setTimeout(() => {
+            localStorage.removeItem('cardapio_atualizado');
+        }, 100);
+        
         // Limpar mudanças pendentes
         mudancasCardapioPendentes = false;
         mudancasCardapio = { disponibilidade: {}, estoque: {} };
@@ -5651,6 +5664,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     iniciarPollingPedidos();
+    
+    // Listener para publicação do cardápio (atualizar aba Novo Pedido)
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'cardapio_atualizado' && e.newValue) {
+            try {
+                const notificacao = JSON.parse(e.newValue);
+                console.log('Notificação de atualização do cardápio recebida no caixa:', notificacao);
+                
+                // Forçar atualização imediata da aba Novo Pedido
+                recarregarProdutosNovoPedido();
+            } catch (error) {
+                console.error('Erro ao processar notificação de cardápio no caixa:', error);
+            }
+        }
+    });
     
     // Listener para sincronização entre abas (cozinha <-> caixa)
     let ultimoTimestampVerificado = Date.now();
