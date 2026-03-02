@@ -18,7 +18,7 @@
                 <div class="cardapio-section">
                     <div class="cardapio-header">
                         <h3>🍽️ Cardápio</h3>
-                        <span class="items-count">{{ produtos.count }} itens</span>
+                        <span class="items-count" id="items-count-pedido">{{ produtos.count }} itens</span>
                     </div>
 
                     <div class="busca-produto" style="display: flex; gap: 0.8rem; align-items: center;">
@@ -2534,13 +2534,12 @@ body {
 }
 
 .items-count {
-    background: rgba(255, 165, 0, 0.15);
-    color: var(--btn-primary);
-    padding: 0.4rem 0.9rem;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    padding: 0.3rem 0.8rem;
     border-radius: 16px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    border: 1px solid var(--btn-primary);
+    font-size: 0.8rem;
+    border: 1px solid var(--border-color);
 }
 
 .busca-produto {
@@ -6442,6 +6441,37 @@ function atualizarContadorDisponiveis() {
     const contadorElement = document.getElementById('total-disponiveis');
     if (contadorElement) {
         contadorElement.textContent = total;
+    }
+}
+
+// FILTRAR CARDÁPIO NA ABA NOVO PEDIDO
+function filtrarCardapio() {
+    const busca = document.getElementById('busca-item').value.toLowerCase();
+    const categoriaFiltro = document.getElementById('filtro-categoria-cardapio').value.toLowerCase();
+    const cards = document.querySelectorAll('.produto-card-cardapio');
+    
+    let visibleCount = 0;
+    
+    cards.forEach(card => {
+        const nome = card.dataset.nome || '';
+        const codigo = card.dataset.codigo || '';
+        const categoria = card.dataset.categoria || '';
+        
+        const matchBusca = nome.includes(busca) || codigo.includes(busca);
+        const matchCategoria = !categoriaFiltro || categoria.toLowerCase() === categoriaFiltro;
+        
+        if (matchBusca && matchCategoria) {
+            card.style.display = '';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Atualizar contador
+    const counter = document.getElementById('items-count-pedido');
+    if (counter) {
+        counter.textContent = `${visibleCount} ${visibleCount === 1 ? 'item' : 'itens'}`;
     }
 }
 
