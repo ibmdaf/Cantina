@@ -675,6 +675,23 @@
     </div>
 </div>
 
+<!-- MODAL CONFIRMAÇÃO GENÉRICO -->
+<div id="modal-confirmacao" class="modal" onclick="fecharModalSeForaDoConteudo(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 450px;">
+        <span class="modal-close" onclick="fecharModalConfirmacao()">&times;</span>
+        <h2 id="modal-confirmacao-titulo" style="color: var(--btn-primary);">⚠️ Confirmação</h2>
+        <div style="margin: 1.5rem 0;">
+            <p id="modal-confirmacao-mensagem" style="color: var(--text-secondary); line-height: 1.6;">
+                Tem certeza que deseja realizar esta ação?
+            </p>
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button onclick="fecharModalConfirmacao()" class="btn btn-secondary" style="padding: 0.7rem 1.5rem;">Cancelar</button>
+            <button id="modal-confirmacao-btn-ok" onclick="confirmarAcaoModal()" class="btn btn-primary" style="padding: 0.7rem 1.5rem;">OK</button>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL EXCLUIR PEDIDO -->
 <div id="modal-excluir-pedido" class="modal" onclick="fecharModalSeForaDoConteudo(event)">
     <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 500px;">
@@ -5066,6 +5083,35 @@ function fecharModalPermissaoNegada() {
     modal.style.display = 'none';
 }
 
+// ========== FUNÇÕES DO MODAL DE CONFIRMAÇÃO GENÉRICO ==========
+
+let acaoConfirmacaoCallback = null;
+
+function abrirModalConfirmacao(titulo, mensagem, callback) {
+    const modal = document.getElementById('modal-confirmacao');
+    const tituloElement = document.getElementById('modal-confirmacao-titulo');
+    const mensagemElement = document.getElementById('modal-confirmacao-mensagem');
+    
+    tituloElement.textContent = titulo;
+    mensagemElement.textContent = mensagem;
+    acaoConfirmacaoCallback = callback;
+    
+    modal.style.display = 'block';
+}
+
+function fecharModalConfirmacao() {
+    const modal = document.getElementById('modal-confirmacao');
+    modal.style.display = 'none';
+    acaoConfirmacaoCallback = null;
+}
+
+function confirmarAcaoModal() {
+    if (acaoConfirmacaoCallback) {
+        acaoConfirmacaoCallback();
+    }
+    fecharModalConfirmacao();
+}
+
 async function atualizarPedidosAtivos() {
     try {
         const response = await fetch('/caixa/api/pedidos-ativos/');
@@ -6681,29 +6727,31 @@ async function salvarNovaCategoria() {
 }
 
 async function excluirCategoria(categoriaId) {
-    if (!confirm('Tem certeza que deseja excluir esta categoria?')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/caixa/categorias/${categoriaId}/excluir/`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
+    abrirModalConfirmacao(
+        '🗑️ Excluir Categoria',
+        'Tem certeza que deseja excluir esta categoria?',
+        async () => {
+            try {
+                const response = await fetch(`/caixa/categorias/${categoriaId}/excluir/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    await carregarCategorias();
+                } else {
+                    showToast('Erro ao excluir categoria: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showToast('Erro ao excluir categoria!', 'error');
             }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            await carregarCategorias();
-        } else {
-            showToast('Erro ao excluir categoria: ' + data.error);
         }
-    } catch (error) {
-        console.error('Erro:', error);
-        showToast('Erro ao excluir categoria!', 'error');
-    }
+    );
 }
 
 // ========== FUNÇÕES DO MENU DE AÇÕES ==========
@@ -6757,33 +6805,34 @@ document.addEventListener('click', function() {
 
 async function toggleAtivarItem(produtoId, estaAtivo) {
     const acao = estaAtivo ? 'inativar' : 'ativar';
+    const titulo = estaAtivo ? '🚫 Inativar Item' : '✅ Ativar Item';
     const mensagem = estaAtivo ? 
         'Tem certeza que deseja inativar este item? Ele será removido do cardápio.' : 
         'Deseja ativar este item novamente?';
     
-    if (!confirm(mensagem)) return;
-    
-    try {
-        const response = await fetch(`/caixa/produto/${produtoId}/toggle-ativo/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+    abrirModalConfirmacao(titulo, mensagem, async () => {
+        try {
+            const response = await fetch(`/caixa/produto/${produtoId}/toggle-ativo/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast(`✅ Item ${acao === 'inativar' ? 'inativado' : 'ativado'} com sucesso!`, 'success');
+                location.reload();
+            } else {
+                showToast('❌ Erro: ' + (data.error || 'Erro desconhecido'));
             }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showToast(`✅ Item ${acao === 'inativar' ? 'inativado' : 'ativado'} com sucesso!`, 'success');
-            location.reload();
-        } else {
-            showToast('❌ Erro: ' + (data.error || 'Erro desconhecido'));
+        } catch (error) {
+            console.error('Erro:', error);
+            showToast('❌ Erro ao alterar status do item!', 'error');
         }
-    } catch (error) {
-        console.error('Erro:', error);
-        showToast('❌ Erro ao alterar status do item!', 'error');
-    }
+    });
 }
 
 function abrirModalExcluirItem(produtoId, produtoNome) {
@@ -7163,14 +7212,18 @@ function adicionarSlotCombo() {
 }
 
 function removerSlotCombo(index) {
-    if (confirm('Tem certeza que deseja remover este slot?')) {
-        comboSlots.splice(index, 1);
-        // Reordenar
-        comboSlots.forEach((slot, i) => {
-            slot.ordem = i;
-        });
-        renderizarSlotsCombo();
-    }
+    abrirModalConfirmacao(
+        '🗑️ Remover Slot',
+        'Tem certeza que deseja remover este slot?',
+        () => {
+            comboSlots.splice(index, 1);
+            // Reordenar
+            comboSlots.forEach((slot, i) => {
+                slot.ordem = i;
+            });
+            renderizarSlotsCombo();
+        }
+    );
 }
 
 function adicionarItemSlot(slotIndex) {
@@ -7242,10 +7295,14 @@ function selecionarProdutoParaSlot(produtoId, produtoNome, estoque) {
 }
 
 function removerItemSlot(slotIndex, itemIndex) {
-    if (confirm('Remover este item do slot?')) {
-        comboSlots[slotIndex].itens.splice(itemIndex, 1);
-        renderizarSlotsCombo();
-    }
+    abrirModalConfirmacao(
+        '🗑️ Remover Item',
+        'Remover este item do slot?',
+        () => {
+            comboSlots[slotIndex].itens.splice(itemIndex, 1);
+            renderizarSlotsCombo();
+        }
+    );
 }
 
 function renderizarSlotsCombo() {
