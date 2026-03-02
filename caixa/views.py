@@ -1370,3 +1370,58 @@ def relatorios_dados(request):
         'top_itens': top_itens_data,
         'historico': historico
     })
+
+@login_required
+def api_produtos_disponiveis(request, empresa_id):
+    """
+    API para retornar produtos disponíveis em tempo real
+    Usado para atualização automática na tela cliente e aba Novo Pedido
+    """
+    try:
+        from authentication.models import Empresa
+        empresa = get_object_or_404(Empresa, id=empresa_id)
+        
+        # Produtos ativos e disponíveis
+        produtos = Produto.objects.filter(
+            empresa=empresa,
+            ativo=True
+        ).select_related('categoria').order_by('nome')
+        
+        produtos_data = []
+        for produto in produtos:
+            produto_dict = {
+                'id': produto.id,
+                'nome': produto.nome,
+                'preco': str(produto.preco),
+                'quantidade_estoque': produto.quantidade_estoque,
+                'is_combo': produto.is_combo,
+            }
+            
+            if produto.categoria:
+                produto_dict['categoria'] = {
+                    'nome': produto.categoria.nome,
+                    'emoji': produto.categoria.emoji
+                }
+            else:
+                produto_dict['categoria'] = None
+            
+            # Se for combo, incluir informações do combo
+            if produto.is_combo:
+                try:
+                    combo = Combo.objects.get(produto=produto)
+                    produto_dict['combo_id'] = combo.id
+                except Combo.DoesNotExist:
+                    produto_dict['combo_id'] = None
+            
+            produtos_data.append(produto_dict)
+        
+        return JsonResponse({
+            'success': True,
+            'produtos': produtos_data,
+            'timestamp': timezone.now().isoformat()
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
