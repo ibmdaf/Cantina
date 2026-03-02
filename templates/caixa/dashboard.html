@@ -402,7 +402,7 @@
                     <div class="link-icon">👁️</div>
                     <h3>Visão Cliente</h3>
                     <p>Cardápio do dia + Espelhamento do pedido em tempo real</p>
-                    <a href="/cardapio/{{ user.empresa.id }}/" target="_blank" class="btn-action">Abrir</a>
+                    <a href="/cardapio/{{ user.empresa.id }}/" class="btn-action">Abrir</a>
                     <div class="link-url">
                         <input type="text" readonly value="{{ request.scheme }}://{{ request.get_host }}/cardapio/{{ user.empresa.id }}/" class="url-input">
                         <button class="btn-copy" onclick="copiarURL(this)">📋</button>
