@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.utils import timezone
 from .models import Pedido, ItemPedido, Produto, Categoria, Combo, ComboSlot, ComboSlotItem, PedidoComboEscolha
 from decimal import Decimal
@@ -29,7 +29,11 @@ def caixa_dashboard(request, aba='novo-pedido'):
     todos_produtos = ordenar_produtos_customizado(todos_produtos_raw)
     
     # Apenas produtos ativos para venda na aba "Novo Pedido"
-    produtos_disponiveis_raw = Produto.objects.filter(empresa=empresa, ativo=True).select_related('categoria')
+    # Mostrar todos os produtos ativos, independente do estoque
+    produtos_disponiveis_raw = Produto.objects.filter(
+        empresa=empresa, 
+        ativo=True
+    ).select_related('categoria')
     produtos_disponiveis = ordenar_produtos_customizado(produtos_disponiveis_raw)
     
     # PADRONIZADO: Mesma query da cozinha (pendente, preparando, pronto)
