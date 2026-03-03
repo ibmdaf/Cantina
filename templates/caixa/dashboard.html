@@ -18,7 +18,7 @@
                 <div class="cardapio-section">
                     <div class="cardapio-header">
                         <h3>🍽️ Cardápio</h3>
-                        <span class="items-count" id="items-count-pedido">{{ produtos.count }} itens</span>
+                        <span class="items-count" id="items-count-pedido">{{ produtos.count }} itens disponíveis</span>
                     </div>
 
                     <div class="busca-produto" style="display: flex; gap: 0.8rem; align-items: center;">
@@ -33,19 +33,27 @@
 
                     <div class="produtos-cardapio-grid">
                         {% for produto in produtos %}
-                        <div class="produto-card-cardapio" 
+                        <div class="produto-card-cardapio {% if not produto.is_combo and produto.quantidade_estoque == 0 %}produto-sem-estoque{% endif %}" 
                              data-nome="{{ produto.nome|lower }}" 
                              data-codigo="{{ produto.id }}"
                              data-categoria="{% if produto.categoria %}{{ produto.categoria.nome }}{% endif %}"
                              data-is-combo="{% if produto.is_combo %}true{% else %}false{% endif %}"
-                             onclick="{% if produto.is_combo %}abrirModalSelecaoCombo({{ produto.get_combo_id }}, '{{ produto.nome|escapejs }}', {{ produto.preco }}){% else %}adicionarProduto({{ produto.id }}, '{{ produto.nome }}', {{ produto.preco }}){% endif %}">
+                             data-estoque="{{ produto.quantidade_estoque }}"
+                             onclick="{% if produto.is_combo or produto.quantidade_estoque > 0 %}{% if produto.is_combo %}abrirModalSelecaoCombo({{ produto.get_combo_id }}, '{{ produto.nome|escapejs }}', {{ produto.preco }}){% else %}adicionarProduto({{ produto.id }}, '{{ produto.nome }}', {{ produto.preco }}){% endif %}{% else %}mostrarAlertaSemEstoque('{{ produto.nome|escapejs }}'){% endif %}">
                             <div class="produto-card-info">
                                 <h4>{% if produto.is_combo %}🎁 {% endif %}{{ produto.nome }}</h4>
                                 <span class="produto-codigo">#{{ produto.id|stringformat:"03d" }}</span>
                             </div>
                             <div class="produto-card-preco">R$ {{ produto.preco }}</div>
-                            {% if produto.quantidade_estoque > 0 and not produto.is_combo %}
-                            <span class="produto-badge-estoque" data-produto-id="{{ produto.id }}" style="display: none;">{{ produto.quantidade_estoque }} un</span>
+                            {% if not produto.is_combo %}
+                            <span class="produto-badge-estoque {% if produto.quantidade_estoque == 0 %}estoque-zero{% endif %}" data-produto-id="{{ produto.id }}">
+                                {{ produto.quantidade_estoque }} un
+                            </span>
+                            {% endif %}
+                            {% if not produto.is_combo and produto.quantidade_estoque == 0 %}
+                            <div class="produto-indisponivel-overlay">
+                                <span>❌ Indisponível</span>
+                            </div>
                             {% endif %}
                         </div>
                         {% endfor %}
@@ -2651,6 +2659,39 @@ body {
     border-radius: 12px;
     font-size: 0.75rem;
     font-weight: 600;
+}
+
+.produto-badge-estoque.estoque-zero {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+}
+
+/* Produto sem estoque - desabilitado */
+.produto-card-cardapio.produto-sem-estoque {
+    opacity: 0.6;
+    cursor: not-allowed;
+    position: relative;
+}
+
+.produto-card-cardapio.produto-sem-estoque:hover {
+    border-color: var(--border-color);
+    background: var(--bg-card);
+    transform: none;
+}
+
+.produto-indisponivel-overlay {
+    position: absolute;
+    bottom: 0.8rem;
+    left: 0.8rem;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
 }
 
 .badge-quantidade-tabela {
@@ -5861,6 +5902,9 @@ function atualizarCronometrosLocal() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Iniciando polling de pedidos ativos');
     
+    // Inicializar contador de itens disponíveis no cardápio
+    inicializarContadorPedido();
+    
     // Inicializar tempo médio com valor do backend
     const tempoMedioSegundos = {{ estatisticas.tempo_medio_segundos|default:0 }};
     if (tempoMedioSegundos > 0) {
@@ -6475,11 +6519,14 @@ function filtrarCardapio() {
     const cards = document.querySelectorAll('.produto-card-cardapio');
     
     let visibleCount = 0;
+    let availableCount = 0;
     
     cards.forEach(card => {
         const nome = card.dataset.nome || '';
         const codigo = card.dataset.codigo || '';
         const categoria = card.dataset.categoria || '';
+        const estoque = parseInt(card.dataset.estoque || '0');
+        const isCombo = card.dataset.isCombo === 'true';
         
         const matchBusca = nome.includes(busca) || codigo.includes(busca);
         const matchCategoria = !categoriaFiltro || categoria.toLowerCase() === categoriaFiltro;
@@ -6487,16 +6534,44 @@ function filtrarCardapio() {
         if (matchBusca && matchCategoria) {
             card.style.display = '';
             visibleCount++;
+            // Contar apenas produtos com estoque ou combos
+            if (isCombo || estoque > 0) {
+                availableCount++;
+            }
         } else {
             card.style.display = 'none';
         }
     });
     
-    // Atualizar contador
+    // Atualizar contador com produtos disponíveis (com estoque)
     const counter = document.getElementById('items-count-pedido');
     if (counter) {
-        counter.textContent = `${visibleCount} ${visibleCount === 1 ? 'item' : 'itens'}`;
+        counter.textContent = `${availableCount} ${availableCount === 1 ? 'item disponível' : 'itens disponíveis'}`;
     }
+}
+
+// Inicializar contador de itens ao carregar a página
+function inicializarContadorPedido() {
+    const cards = document.querySelectorAll('.produto-card-cardapio');
+    const counter = document.getElementById('items-count-pedido');
+    
+    if (counter && cards.length > 0) {
+        // Contar apenas produtos com estoque ou combos
+        let availableCount = 0;
+        cards.forEach(card => {
+            const estoque = parseInt(card.dataset.estoque || '0');
+            const isCombo = card.dataset.isCombo === 'true';
+            if (isCombo || estoque > 0) {
+                availableCount++;
+            }
+        });
+        counter.textContent = `${availableCount} ${availableCount === 1 ? 'item disponível' : 'itens disponíveis'}`;
+    }
+}
+
+// Mostrar alerta quando clicar em produto sem estoque
+function mostrarAlertaSemEstoque(nomeProduto) {
+    showToast(`❌ ${nomeProduto} está sem estoque no momento`, 'error');
 }
 
 async function recarregarProdutosNovoPedido() {
