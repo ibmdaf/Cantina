@@ -83,7 +83,10 @@ def api_pedidos_cozinha(request):
     pedidos_ativos = Pedido.objects.filter(
         empresa=empresa,
         status__in=['pendente', 'preparando', 'pronto']
-    ).order_by('criado_em').prefetch_related('itens__produto')
+    ).order_by('criado_em').prefetch_related(
+        'itens__produto',
+        'itens__escolhas_combo__produto_escolhido'
+    )
     
     # Calcular estatísticas
     total_pendente = pedidos_ativos.filter(status='pendente').count()
@@ -124,11 +127,23 @@ def api_pedidos_cozinha(request):
     for pedido in pedidos_ativos:
         itens_data = []
         for item in pedido.itens.all():
-            itens_data.append({
+            item_dict = {
                 'quantidade': item.quantidade,
                 'produto_nome': item.produto.nome,
-                'observacoes': item.observacoes or ''
-            })
+                'observacoes': item.observacoes or '',
+                'is_combo': item.produto.is_combo()
+            }
+            
+            # Se for combo, adicionar escolhas
+            if item.produto.is_combo():
+                escolhas = []
+                for escolha in item.escolhas_combo.all():
+                    escolhas.append({
+                        'produto_nome': escolha.produto_escolhido.nome
+                    })
+                item_dict['escolhas'] = escolhas
+            
+            itens_data.append(item_dict)
         
         pedidos_data.append({
             'id': pedido.id,
@@ -136,6 +151,7 @@ def api_pedidos_cozinha(request):
             'cliente_nome': pedido.cliente_nome or '',
             'tipo': pedido.tipo,
             'status': pedido.status,
+            'observacoes': pedido.observacoes or '',
             'criado_em': pedido.criado_em.isoformat(),
             'itens': itens_data
         })
