@@ -212,6 +212,21 @@
             }
             return cookieValue;
         }
+
+        // LISTENER PARA ATUALIZAÇÃO DO CARDÁPIO
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cardapio_atualizado' && e.newValue) {
+                try {
+                    const notificacao = JSON.parse(e.newValue);
+                    console.log('Notificação de atualização do cardápio recebida no autoatendimento:', notificacao);
+                    
+                    // Recarregar a página para obter os produtos atualizados
+                    window.location.reload();
+                } catch (error) {
+                    console.error('Erro ao processar notificação de cardápio no autoatendimento:', error);
+                }
+            }
+        });
     </script>
 </body>
 </html>
