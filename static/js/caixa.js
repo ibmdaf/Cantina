@@ -1,8 +1,48 @@
+console.log('🚀 [CAIXA.JS] Arquivo carregado!');
+
 let itensPedido = [];
+let estoqueProdutos = {}; // Cache de estoque dos produtos
+
+// Função para obter estoque de um produto
+function obterEstoqueProduto(produtoId) {
+    const card = document.querySelector(`.produto-card-cardapio[data-codigo="${produtoId}"]`);
+    if (card) {
+        const estoque = parseInt(card.dataset.estoque || '0');
+        estoqueProdutos[produtoId] = estoque;
+        return estoque;
+    }
+    return estoqueProdutos[produtoId] || 0;
+}
 
 function adicionarProduto(id, nome, preco) {
     console.log('adicionarProduto chamado:', {id, nome, preco});
-    const itemExistente = itensPedido.find(item => item.produto_id === id);
+    
+    // Verificar estoque disponível
+    const estoqueDisponivel = obterEstoqueProduto(id);
+    const itemExistente = itensPedido.find(item => item.produto_id === id && !item.is_combo);
+    const quantidadeAtual = itemExistente ? itemExistente.quantidade : 0;
+    
+    // Calcular quanto deste produto já está sendo usado em combos
+    let quantidadeEmCombos = 0;
+    itensPedido.forEach(item => {
+        if (item.is_combo) {
+            item.escolhas.forEach(escolha => {
+                if (escolha.produto_id === id) {
+                    quantidadeEmCombos += escolha.quantidade_abate * item.quantidade;
+                }
+            });
+        }
+    });
+    
+    const estoqueRestante = estoqueDisponivel - quantidadeEmCombos;
+    
+    console.log(`Estoque disponível: ${estoqueDisponivel}, Em combos: ${quantidadeEmCombos}, Restante: ${estoqueRestante}, Quantidade no carrinho: ${quantidadeAtual}`);
+    
+    // Validar se há estoque suficiente
+    if (quantidadeAtual >= estoqueRestante) {
+        alert(`❌ Estoque insuficiente!\n\n${nome}\nDisponível: ${estoqueDisponivel} unidade(s)\nEm combos: ${quantidadeEmCombos} unidade(s)\nRestante: ${estoqueRestante} unidade(s)\nNo carrinho: ${quantidadeAtual} unidade(s)`);
+        return;
+    }
     
     if (itemExistente) {
         itemExistente.quantidade++;
@@ -26,12 +66,79 @@ function removerProduto(index) {
 }
 
 function alterarQuantidade(index, delta) {
-    itensPedido[index].quantidade += delta;
-    if (itensPedido[index].quantidade <= 0) {
-        removerProduto(index);
-    } else {
-        atualizarListaItens();
+    const item = itensPedido[index];
+    const novaQuantidade = item.quantidade + delta;
+    
+    // Se está diminuindo, permitir
+    if (delta < 0) {
+        if (novaQuantidade <= 0) {
+            removerProduto(index);
+        } else {
+            item.quantidade = novaQuantidade;
+            atualizarListaItens();
+        }
+        return;
     }
+    
+    // Se está aumentando, verificar estoque
+    if (item.is_combo) {
+        // Para combos, verificar estoque de cada componente
+        for (const escolha of item.escolhas) {
+            const estoqueDisponivel = obterEstoqueProduto(escolha.produto_id);
+            const quantidadeNecessaria = escolha.quantidade_abate * novaQuantidade;
+            
+            // Calcular quanto já está sendo usado por outros itens no carrinho
+            let quantidadeUsada = 0;
+            itensPedido.forEach((outroItem, outroIndex) => {
+                if (outroIndex === index) return; // Pular o item atual
+                
+                if (outroItem.is_combo) {
+                    // Verificar se este combo usa o mesmo produto
+                    outroItem.escolhas.forEach(outraEscolha => {
+                        if (outraEscolha.produto_id === escolha.produto_id) {
+                            quantidadeUsada += outraEscolha.quantidade_abate * outroItem.quantidade;
+                        }
+                    });
+                } else if (outroItem.produto_id === escolha.produto_id) {
+                    quantidadeUsada += outroItem.quantidade;
+                }
+            });
+            
+            const estoqueRestante = estoqueDisponivel - quantidadeUsada;
+            
+            if (quantidadeNecessaria > estoqueRestante) {
+                alert(`❌ Estoque insuficiente!\n\n${escolha.produto_nome}\nDisponível: ${estoqueDisponivel} unidade(s)\nEm uso: ${quantidadeUsada} unidade(s)\nRestante: ${estoqueRestante} unidade(s)\nNecessário: ${quantidadeNecessaria} unidade(s)`);
+                return;
+            }
+        }
+    } else {
+        // Para produtos normais, verificar estoque considerando uso em combos
+        const estoqueDisponivel = obterEstoqueProduto(item.produto_id);
+        
+        // Calcular quanto já está sendo usado em combos
+        let quantidadeEmCombos = 0;
+        itensPedido.forEach((outroItem, outroIndex) => {
+            if (outroIndex === index) return; // Pular o item atual
+            
+            if (outroItem.is_combo) {
+                outroItem.escolhas.forEach(escolha => {
+                    if (escolha.produto_id === item.produto_id) {
+                        quantidadeEmCombos += escolha.quantidade_abate * outroItem.quantidade;
+                    }
+                });
+            }
+        });
+        
+        const estoqueRestante = estoqueDisponivel - quantidadeEmCombos;
+        
+        if (novaQuantidade > estoqueRestante) {
+            alert(`❌ Estoque insuficiente!\n\n${item.nome}\nDisponível: ${estoqueDisponivel} unidade(s)\nEm combos: ${quantidadeEmCombos} unidade(s)\nRestante: ${estoqueRestante} unidade(s)\nNo carrinho: ${item.quantidade} unidade(s)`);
+            return;
+        }
+    }
+    
+    item.quantidade = novaQuantidade;
+    atualizarListaItens();
 }
 
 function atualizarListaItens() {
@@ -94,11 +201,13 @@ function salvarCarrinhoTemporario() {
         const clienteNome = document.getElementById('cliente-nome')?.value || '';
         const tipo = document.getElementById('tipo-pedido')?.value || 'balcao';
         const pagamento = document.getElementById('forma-pagamento')?.value || 'dinheiro';
+        const observacoes = document.getElementById('observacoes')?.value || '';
         
         const carrinho = {
             cliente_nome: clienteNome,
             tipo: tipo,
             pagamento: pagamento,
+            observacoes: observacoes,
             itens: itensPedido,
             timestamp: new Date().getTime()
         };
@@ -134,6 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const clienteNomeInput = document.getElementById('cliente-nome');
     const tipoPedidoSelect = document.getElementById('tipo-pedido');
     const formaPagamentoSelect = document.getElementById('forma-pagamento');
+    const observacoesTextarea = document.getElementById('observacoes');
     
     if (clienteNomeInput) {
         clienteNomeInput.addEventListener('input', salvarCarrinhoTemporario);
@@ -144,11 +254,17 @@ document.addEventListener('DOMContentLoaded', function() {
     if (formaPagamentoSelect) {
         formaPagamentoSelect.addEventListener('change', salvarCarrinhoTemporario);
     }
+    if (observacoesTextarea) {
+        observacoesTextarea.addEventListener('input', salvarCarrinhoTemporario);
+    }
 });
 
 async function finalizarPedido() {
+    console.log('🎯 [FINALIZAR] Função finalizarPedido chamada!');
+    
     // Validação 1: Verificar se há itens no carrinho
     if (itensPedido.length === 0) {
+        console.log('❌ [FINALIZAR] Carrinho vazio');
         alert('❌ Adicione pelo menos um item ao pedido!');
         return;
     }
@@ -194,11 +310,50 @@ async function finalizarPedido() {
         console.log('Response data:', result);
         
         if (result.success) {
-            // Limpar localStorage
+            console.log('✅ [FINALIZAR] Pedido criado com sucesso!', result);
+            
+            // Limpar localStorage do carrinho
             localStorage.removeItem('caixa_carrinho_temp');
             
-            // Mostrar modal com QR Code
-            mostrarQRCode(result.qr_code);
+            // Notificar visão cliente para limpar a tela
+            localStorage.setItem('pedido_finalizado', JSON.stringify({
+                action: 'limpar_tela',
+                pedido_id: result.pedido_id,
+                timestamp: Date.now()
+            }));
+            
+            // Remover após 100ms para permitir que outras abas detectem
+            setTimeout(() => {
+                localStorage.removeItem('pedido_finalizado');
+            }, 100);
+            
+            // Salvar QR Code no localStorage para reabrir após reload
+            localStorage.setItem('qrcode_pendente', JSON.stringify({
+                qr_code: result.qr_code,
+                numero_pedido: result.numero_pedido,
+                timestamp: Date.now()
+            }));
+            
+            // Disparar evento de atualização de estoque
+            const eventoEstoque = {
+                action: 'pedido_finalizado',
+                timestamp: Date.now(),
+                pedido_id: result.pedido_id
+            };
+            console.log('📦 [FINALIZAR] Disparando evento de atualização de estoque:', eventoEstoque);
+            localStorage.setItem('estoque_atualizado', JSON.stringify(eventoEstoque));
+            
+            // Remover após 100ms para permitir que outras abas detectem
+            setTimeout(() => {
+                localStorage.removeItem('estoque_atualizado');
+            }, 100);
+            
+            // ATUALIZAÇÃO IMEDIATA: Recarregar a página após 500ms
+            console.log('🔄 [FINALIZAR] Agendando reload da página em 500ms...');
+            setTimeout(() => {
+                console.log('🔄 [FINALIZAR] Recarregando página...');
+                window.location.reload();
+            }, 500);
             
             // Limpar formulário
             itensPedido = [];
@@ -208,6 +363,7 @@ async function finalizarPedido() {
             document.getElementById('tipo-pedido').selectedIndex = 0;
             document.getElementById('forma-pagamento').selectedIndex = 0;
         } else {
+            console.log('❌ [FINALIZAR] Erro ao criar pedido:', result.error);
             alert('❌ Erro ao criar pedido: ' + (result.error || 'Erro desconhecido'));
         }
     } catch (error) {
