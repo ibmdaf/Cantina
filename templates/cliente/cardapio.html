@@ -533,6 +533,39 @@
         const empresaId = {{ empresa.id }};
         let ultimoPedidoId = null;
         let ultimoCarrinho = null;
+        
+        // Carregar lista de pedidos finalizados do localStorage
+        let pedidosFinalizados = [];
+        try {
+            const salvos = localStorage.getItem('pedidos_finalizados');
+            if (salvos) {
+                pedidosFinalizados = JSON.parse(salvos);
+                console.log('Pedidos finalizados carregados do localStorage:', pedidosFinalizados);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar pedidos finalizados:', error);
+        }
+
+        // Função para adicionar pedido à lista de finalizados
+        function adicionarPedidoFinalizado(pedidoId) {
+            if (pedidoId && !pedidosFinalizados.includes(pedidoId)) {
+                pedidosFinalizados.push(pedidoId);
+                console.log('✅ Pedido adicionado à lista de finalizados:', pedidoId);
+                
+                // Manter apenas os últimos 20 pedidos finalizados
+                if (pedidosFinalizados.length > 20) {
+                    pedidosFinalizados.shift(); // Remove o mais antigo
+                }
+                
+                // Salvar no localStorage
+                try {
+                    localStorage.setItem('pedidos_finalizados', JSON.stringify(pedidosFinalizados));
+                    console.log('Lista salva no localStorage:', pedidosFinalizados);
+                } catch (error) {
+                    console.error('Erro ao salvar lista de finalizados:', error);
+                }
+            }
+        }
 
         // Restaurar badges de estoque do localStorage
         function restaurarBadgesEstoque() {
@@ -558,14 +591,30 @@
             // Verificar carrinho em tempo real (localStorage) a cada 500ms
             setInterval(verificarCarrinho, 500);
             
-            // Verificar pedidos finalizados a cada 3 segundos
-            setInterval(buscarPedidoAtivo, 3000);
+            // Verificar pedidos finalizados a cada 10 segundos
+            setInterval(buscarPedidoAtivo, 10000);
         }
 
         function verificarCarrinho() {
             try {
                 // Tentar ler do localStorage (compartilhado entre abas)
                 const carrinhoStr = localStorage.getItem('caixa_carrinho_temp');
+                
+                // Se o carrinho foi removido e havia um pedido sendo exibido
+                if (!carrinhoStr && ultimoCarrinho !== null) {
+                    console.log('🗑️ Carrinho foi removido, pedido foi finalizado');
+                    console.log('ultimoPedidoId atual:', ultimoPedidoId);
+                    
+                    // Adicionar o pedido atual à lista de finalizados
+                    if (ultimoPedidoId) {
+                        console.log('Adicionando pedido à lista de finalizados:', ultimoPedidoId);
+                        adicionarPedidoFinalizado(ultimoPedidoId);
+                    }
+                    
+                    // Limpar
+                    ultimoCarrinho = null;
+                    // Não limpar ultimoPedidoId aqui, deixar para buscarPedidoAtivo
+                }
                 
                 if (carrinhoStr && carrinhoStr !== ultimoCarrinho) {
                     ultimoCarrinho = carrinhoStr;
@@ -584,20 +633,37 @@
 
         async function buscarPedidoAtivo() {
             try {
-                const response = await fetch(`/cliente/pedido-ativo/${empresaId}/`);
+                const response = await fetch(`/cardapio/pedido-ativo/${empresaId}/`);
                 const data = await response.json();
 
                 if (data.pedido) {
-                    // Se é um novo pedido finalizado
+                    console.log('Pedido retornado id:', data.pedido.id);
+                    console.log('Lista de finalizados:', pedidosFinalizados);
+                    console.log('Pedido está na lista?', pedidosFinalizados.includes(data.pedido.id));
+                    
+                    // Verificar se este pedido já foi finalizado (não deve ser mostrado)
+                    if (pedidosFinalizados.includes(data.pedido.id)) {
+                        console.log('❌ Pedido já finalizado, não exibir:', data.pedido.id);
+                        // Se estava exibindo, limpar
+                        if (ultimoPedidoId === data.pedido.id) {
+                            limparPedido();
+                            ultimoPedidoId = null;
+                        }
+                        return;
+                    }
+                    
+                    console.log('✅ Pedido pode ser exibido:', data.pedido.id);
+                    
+                    // Se é um novo pedido ou o mesmo pedido ainda ativo
                     if (data.pedido.id !== ultimoPedidoId) {
                         ultimoPedidoId = data.pedido.id;
                         exibirPedido(data.pedido);
-                        
-                        // Limpar após 5 segundos
-                        setTimeout(() => {
-                            limparPedido();
-                            ultimoPedidoId = null;
-                        }, 5000);
+                    }
+                } else {
+                    // Não há pedido ativo, limpar se havia um antes
+                    if (ultimoPedidoId !== null) {
+                        limparPedido();
+                        ultimoPedidoId = null;
                     }
                 }
             } catch (error) {
@@ -652,7 +718,39 @@
                     <span class="item-preco">R$ ${subtotal.toFixed(2)}</span>
                 `;
                 listaItens.appendChild(itemDiv);
+                
+                // Se for combo, adicionar escolhas
+                if (item.is_combo && item.escolhas && item.escolhas.length > 0) {
+                    item.escolhas.forEach(escolha => {
+                        const escolhaDiv = document.createElement('div');
+                        escolhaDiv.className = 'pedido-item';
+                        escolhaDiv.style.marginLeft = '1.5rem';
+                        escolhaDiv.style.fontSize = '0.85rem';
+                        escolhaDiv.style.opacity = '0.7';
+                        escolhaDiv.innerHTML = `
+                            <div class="item-descricao">
+                                <span class="item-nome">• ${escolha.produto_nome}</span>
+                            </div>
+                        `;
+                        listaItens.appendChild(escolhaDiv);
+                    });
+                }
             });
+
+            // Adicionar observações do carrinho se houver
+            if (carrinho.observacoes && carrinho.observacoes.trim() !== '') {
+                const obsDiv = document.createElement('div');
+                obsDiv.style.marginTop = '1rem';
+                obsDiv.style.padding = '0.8rem';
+                obsDiv.style.background = 'rgba(244, 162, 58, 0.1)';
+                obsDiv.style.borderLeft = '3px solid var(--accent-color)';
+                obsDiv.style.borderRadius = '4px';
+                obsDiv.innerHTML = `
+                    <div style="font-size: 0.75rem; color: var(--accent-color); font-weight: 600; margin-bottom: 0.3rem;">💬 OBSERVAÇÕES DO PEDIDO:</div>
+                    <div style="font-size: 0.85rem; color: var(--text-primary); font-style: italic;">${carrinho.observacoes}</div>
+                `;
+                listaItens.appendChild(obsDiv);
+            }
 
             // Atualizar contadores e total
             document.getElementById('pedido-itens-count').textContent = carrinho.itens.length;
@@ -660,6 +758,10 @@
         }
 
         function exibirPedido(pedido) {
+            console.log('=== EXIBIR PEDIDO ===');
+            console.log('Pedido completo:', pedido);
+            console.log('Observações do pedido:', pedido.observacoes);
+            
             document.getElementById('pedido-vazio').style.display = 'none';
             document.getElementById('pedido-conteudo').style.display = 'block';
 
@@ -680,6 +782,9 @@
             }
 
             pedido.itens.forEach(item => {
+                console.log('Item cliente:', item);
+                console.log('Observações:', item.observacoes);
+                
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'pedido-item';
                 itemDiv.innerHTML = `
@@ -690,7 +795,58 @@
                     <span class="item-preco">R$ ${item.subtotal}</span>
                 `;
                 listaItens.appendChild(itemDiv);
+                
+                // Se tiver observações, adicionar
+                if (item.observacoes && item.observacoes.trim() !== '') {
+                    console.log('Adicionando observação:', item.observacoes);
+                    const obsDiv = document.createElement('div');
+                    obsDiv.className = 'pedido-item';
+                    obsDiv.style.marginLeft = '1.5rem';
+                    obsDiv.style.fontSize = '0.8rem';
+                    obsDiv.style.opacity = '0.7';
+                    obsDiv.style.fontStyle = 'italic';
+                    obsDiv.innerHTML = `
+                        <div class="item-descricao">
+                            <span class="item-nome">💬 ${item.observacoes}</span>
+                        </div>
+                    `;
+                    listaItens.appendChild(obsDiv);
+                } else {
+                    console.log('Sem observações ou vazio');
+                }
+                
+                // Se for combo, adicionar escolhas
+                if (item.is_combo && item.escolhas && item.escolhas.length > 0) {
+                    item.escolhas.forEach(escolha => {
+                        const escolhaDiv = document.createElement('div');
+                        escolhaDiv.className = 'pedido-item';
+                        escolhaDiv.style.marginLeft = '1.5rem';
+                        escolhaDiv.style.fontSize = '0.85rem';
+                        escolhaDiv.style.opacity = '0.7';
+                        escolhaDiv.innerHTML = `
+                            <div class="item-descricao">
+                                <span class="item-nome">• ${escolha.produto_nome}</span>
+                            </div>
+                        `;
+                        listaItens.appendChild(escolhaDiv);
+                    });
+                }
             });
+
+            // Adicionar observações do pedido se houver
+            if (pedido.observacoes && pedido.observacoes.trim() !== '') {
+                const obsDiv = document.createElement('div');
+                obsDiv.style.marginTop = '1rem';
+                obsDiv.style.padding = '0.8rem';
+                obsDiv.style.background = 'rgba(244, 162, 58, 0.1)';
+                obsDiv.style.borderLeft = '3px solid var(--accent-color)';
+                obsDiv.style.borderRadius = '4px';
+                obsDiv.innerHTML = `
+                    <div style="font-size: 0.75rem; color: var(--accent-color); font-weight: 600; margin-bottom: 0.3rem;">💬 OBSERVAÇÕES DO PEDIDO:</div>
+                    <div style="font-size: 0.85rem; color: var(--text-primary); font-style: italic;">${pedido.observacoes}</div>
+                `;
+                listaItens.appendChild(obsDiv);
+            }
 
             // Atualizar contadores e total
             document.getElementById('pedido-itens-count').textContent = pedido.itens.length;
@@ -731,7 +887,42 @@
                         console.error('Erro ao processar notificação de cardápio:', error);
                     }
                 }
+                
+                // Listener para pedido finalizado - limpar tela
+                if (e.key === 'pedido_finalizado' && e.newValue) {
+                    try {
+                        const notificacao = JSON.parse(e.newValue);
+                        console.log('🔔 Pedido finalizado detectado:', notificacao);
+                        console.log('Pedido ID recebido:', notificacao.pedido_id);
+                        
+                        // Adicionar o pedido à lista de finalizados IMEDIATAMENTE
+                        if (notificacao.pedido_id) {
+                            console.log('Adicionando pedido à lista de finalizados:', notificacao.pedido_id);
+                            adicionarPedidoFinalizado(notificacao.pedido_id);
+                            console.log('Lista atualizada:', pedidosFinalizados);
+                        }
+                        
+                        // Limpar a tela imediatamente
+                        limparPedido();
+                        ultimoPedidoId = null;
+                        ultimoCarrinho = null;
+                    } catch (error) {
+                        console.error('Erro ao processar notificação de pedido finalizado:', error);
+                    }
+                }
             });
+        }
+
+        // FUNÇÃO PARA ATUALIZAR O CARDÁPIO
+        async function atualizarCardapio() {
+            try {
+                console.log('Atualizando cardápio da visão cliente...');
+                
+                // Recarregar a página para obter os produtos atualizados
+                window.location.reload();
+            } catch (error) {
+                console.error('Erro ao atualizar cardápio:', error);
+            }
         }
 
         // SINCRONIZAÇÃO DO MODAL QR CODE
