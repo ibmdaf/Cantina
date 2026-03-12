@@ -471,6 +471,7 @@
                     <table class="data-table" id="tabela-usuarios">
                         <tbody>
                             {% for usuario in user.empresa.usuarios.all %}
+                            {% if user.tipo == 'admin' or usuario.tipo != 'admin' %}
                             <tr>
                                 <td><strong>{{ usuario.first_name|default:"-" }}</strong></td>
                                 <td>{{ usuario.username }}</td>
@@ -497,6 +498,7 @@
                                     </div>
                                 </td>
                             </tr>
+                            {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>
@@ -793,7 +795,9 @@
             <div class="form-group">
                 <label class="form-label">Tipo de Usuário</label>
                 <select id="novo-usuario-tipo" class="form-control">
+                    {% if user.tipo == 'admin' %}
                     <option value="admin">Administrador</option>
+                    {% endif %}
                     <option value="gerente">Gerente</option>
                     <option value="caixa">Caixa</option>
                     <option value="cozinha">Cozinha</option>
