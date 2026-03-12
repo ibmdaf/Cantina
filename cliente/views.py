@@ -4,9 +4,18 @@ from caixa.models import Produto, Categoria, Pedido
 from authentication.models import Empresa
 
 def cardapio_cliente(request, empresa_id):
+    from django.db.models import Q
+    
     empresa = Empresa.objects.get(id=empresa_id)
     categorias = Categoria.objects.filter(empresa=empresa, ativo=True)
-    produtos_raw = Produto.objects.filter(empresa=empresa, ativo=True).select_related('categoria')
+    
+    # Filtrar apenas produtos ativos E com estoque > 0 ou combos
+    produtos_raw = Produto.objects.filter(
+        empresa=empresa, 
+        ativo=True
+    ).filter(
+        Q(quantidade_estoque__gt=0) | Q(combo__isnull=False)
+    ).select_related('categoria')
     
     # Ordenação customizada: Combos primeiro, Bebidas penúltimo, Sobremesas último
     produtos_combo = []
@@ -51,7 +60,10 @@ def pedido_ativo_cliente(request, empresa_id):
         pedido = Pedido.objects.filter(
             empresa=empresa,
             status='pendente'
-        ).order_by('-criado_em').first()
+        ).order_by('-criado_em').prefetch_related(
+            'itens__produto',
+            'itens__escolhas_combo__produto_escolhido'
+        ).first()
         
         if pedido:
             # Mapear tipo para display
@@ -62,12 +74,27 @@ def pedido_ativo_cliente(request, empresa_id):
                 'autoatendimento': '🖥️ Autoatendimento'
             }
             
-            itens = [{
-                'produto_nome': item.produto.nome,
-                'quantidade': item.quantidade,
-                'preco_unitario': str(item.preco_unitario),
-                'subtotal': str(item.subtotal)
-            } for item in pedido.itens.all()]
+            itens = []
+            for item in pedido.itens.all():
+                item_dict = {
+                    'produto_nome': item.produto.nome,
+                    'quantidade': item.quantidade,
+                    'preco_unitario': str(item.preco_unitario),
+                    'subtotal': str(item.subtotal),
+                    'observacoes': item.observacoes or '',
+                    'is_combo': item.produto.is_combo()
+                }
+                
+                # Se for combo, adicionar escolhas
+                if item.produto.is_combo():
+                    escolhas = []
+                    for escolha in item.escolhas_combo.all():
+                        escolhas.append({
+                            'produto_nome': escolha.produto_escolhido.nome
+                        })
+                    item_dict['escolhas'] = escolhas
+                
+                itens.append(item_dict)
             
             return JsonResponse({
                 'pedido': {
@@ -76,6 +103,7 @@ def pedido_ativo_cliente(request, empresa_id):
                     'cliente_nome': pedido.cliente_nome or 'Cliente',
                     'tipo_display': tipo_map.get(pedido.tipo, pedido.tipo),
                     'pagamento': 'Não informado',  # Pode adicionar campo no modelo depois
+                    'observacoes': pedido.observacoes or '',
                     'itens': itens,
                     'total': str(pedido.total),
                     'atualizado': pedido.atualizado_em.isoformat()
