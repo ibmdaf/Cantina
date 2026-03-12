@@ -7,6 +7,50 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
+## [2.4.0] - 12/03/2026
+
+### 🎨 Melhorado
+
+#### Sistema de Espaçamento Padronizado em Modais
+- Implementado padrão consistente de espaçamento baseado em múltiplos de 8px
+- Escala definida: 8px (micro), 16px (padrão), 24px (seções)
+- Aplicado em todos os modais do sistema
+
+**Padrão de Espaçamento**:
+- Título → Primeiro campo: 24px
+- Label → Campo: 8px (via gap)
+- Entre campos: 16px (via gap)
+- Entre grupos/seções: 24px
+- Conteúdo → Botões: 24px
+- Entre botões: 16px
+- Entre colunas: 16px
+
+**Modais Atualizados**:
+- Modal Novo Usuário
+- Modal Editar Usuário
+- Modal Novo Produto / Editar Produto
+- Modal Categorias
+- Modal Novo Combo / Editar Combo
+- Modal Excluir Pedido
+- Tela Novo Pedido (já estava padronizada)
+
+**Implementação**:
+- Uso de `display: flex` com `flex-direction: column` e `gap`
+- Uso de `!important` para sobrescrever estilos globais quando necessário
+- Labels com `margin-bottom: 0 !important` para controle via gap
+- Estrutura consistente em todos os modais
+
+**Benefícios**:
+- Hierarquia visual clara
+- Melhor legibilidade
+- Experiência consistente
+- Facilita manutenção
+- Evita confusão sobre associação label-campo
+
+**Arquivos**: `templates/caixa/dashboard.html`, `GUIA_VISUAL.md`
+
+---
+
 ## [2.3.0] - 02/03/2026
 
 ### 🎨 Melhorado

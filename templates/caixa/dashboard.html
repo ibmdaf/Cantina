@@ -3,7 +3,7 @@
 {% block title %}Pedidos - Sistema Cantina{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="/static/css/pedidos-ativos.css?v=2.3.0">
+<link rel="stylesheet" href="/static/css/pedidos-ativos.css?v=2.4.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 {% endblock %}
 
@@ -769,31 +769,31 @@
 <div id="modal-novo-usuario" class="modal" onclick="fecharModalSeForaDoConteudo(event)">
     <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 500px;">
         <span class="modal-close" onclick="fecharModalNovoUsuario()">&times;</span>
-        <h2 style="color: var(--btn-primary);">👤 Novo Usuário</h2>
+        <h2 style="color: var(--btn-primary); margin-bottom: 24px !important;">👤 Novo Usuário</h2>
         
-        <div style="margin: 1.5rem 0;">
-            <div class="form-group">
-                <label class="form-label">Nome</label>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="form-label" style="margin-bottom: 0 !important;">Nome</label>
                 <input type="text" id="novo-usuario-nome" class="form-control" placeholder="Digite o nome da pessoa">
             </div>
             
-            <div class="form-group">
-                <label class="form-label">Usuário (sem espaços, letras minúsculas)</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="form-label" style="margin-bottom: 0 !important;">Usuário (sem espaços, letras minúsculas)</label>
                 <input type="text" id="novo-usuario-username" class="form-control" placeholder="Digite o nome de usuário">
             </div>
             
-            <div class="form-group">
-                <label class="form-label">Senha</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="form-label" style="margin-bottom: 0 !important;">Senha</label>
                 <input type="password" id="novo-usuario-senha" class="form-control" placeholder="Digite a senha">
             </div>
             
-            <div class="form-group">
-                <label class="form-label">Confirmar Senha</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="form-label" style="margin-bottom: 0 !important;">Confirmar Senha</label>
                 <input type="password" id="novo-usuario-senha-confirmar" class="form-control" placeholder="Confirme a senha">
             </div>
             
-            <div class="form-group">
-                <label class="form-label">Tipo de Usuário</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="form-label" style="margin-bottom: 0 !important;">Tipo de Usuário</label>
                 <select id="novo-usuario-tipo" class="form-control">
                     {% if user.tipo == 'admin' %}
                     <option value="admin">Administrador</option>
@@ -805,7 +805,7 @@
             </div>
         </div>
         
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <div style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px !important;">
             <button onclick="fecharModalNovoUsuario()" class="btn btn-secondary" style="padding: 0.7rem 1.5rem;">Cancelar</button>
             <button onclick="criarNovoUsuario()" class="btn btn-primary" style="padding: 0.7rem 1.5rem;">Criar Usuário</button>
         </div>
@@ -816,31 +816,31 @@
 <div id="modal-editar-usuario" class="modal" onclick="fecharModalSeForaDoConteudo(event)">
     <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 500px;">
         <span class="modal-close" onclick="fecharModalEditarUsuario()">&times;</span>
-        <h2 style="color: var(--btn-primary);">✏️ Editar Usuário</h2>
+        <h2 style="color: var(--btn-primary); margin-bottom: 24px !important;">✏️ Editar Usuário</h2>
         
-        <div style="margin: 1.5rem 0;">
-            <div class="form-group">
-                <label class="form-label">Nome</label>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="form-label" style="margin-bottom: 0 !important;">Nome</label>
                 <input type="text" id="editar-usuario-nome" class="form-control" placeholder="Digite o nome da pessoa">
             </div>
             
-            <div class="form-group">
-                <label class="form-label">Usuário (sem espaços, letras minúsculas)</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="form-label" style="margin-bottom: 0 !important;">Usuário (sem espaços, letras minúsculas)</label>
                 <input type="text" id="editar-usuario-username" class="form-control" placeholder="Digite o nome de usuário">
             </div>
             
-            <div class="form-group">
-                <label class="form-label">Nova Senha (deixe em branco para não alterar)</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="form-label" style="margin-bottom: 0 !important;">Nova Senha (deixe em branco para não alterar)</label>
                 <input type="password" id="editar-usuario-senha" class="form-control" placeholder="Digite a nova senha">
             </div>
             
-            <div class="form-group">
-                <label class="form-label">Confirmar Nova Senha</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="form-label" style="margin-bottom: 0 !important;">Confirmar Nova Senha</label>
                 <input type="password" id="editar-usuario-senha-confirmar" class="form-control" placeholder="Confirme a nova senha">
             </div>
             
-            <div class="form-group">
-                <label class="form-label">Tipo de Usuário</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="form-label" style="margin-bottom: 0 !important;">Tipo de Usuário</label>
                 <select id="editar-usuario-tipo" class="form-control">
                     <option value="admin">Administrador</option>
                     <option value="gerente">Gerente</option>
@@ -850,7 +850,7 @@
             </div>
         </div>
         
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <div style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px !important;">
             <button onclick="fecharModalEditarUsuario()" class="btn btn-secondary" style="padding: 0.7rem 1.5rem;">Cancelar</button>
             <button onclick="salvarEdicaoUsuario()" class="btn btn-primary" style="padding: 0.7rem 1.5rem;">Salvar Alterações</button>
         </div>
@@ -861,20 +861,20 @@
 <div id="modal-excluir-pedido" class="modal" onclick="fecharModalSeForaDoConteudo(event)">
     <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 500px;">
         <span class="modal-close" onclick="fecharModalExcluirPedido()">&times;</span>
-        <h2 style="color: #dc3545;">⚠️ Excluir Pedido</h2>
+        <h2 style="color: #dc3545; margin-bottom: 24px !important;">⚠️ Excluir Pedido</h2>
         
-        <div style="margin: 1.5rem 0;">
-            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <p style="color: var(--text-secondary); margin: 0;">
                 Esta ação é <strong style="color: #dc3545;">IRREVERSÍVEL</strong> e irá:
             </p>
-            <ul style="color: var(--text-secondary); margin-left: 1.5rem; line-height: 1.8;">
+            <ul style="color: var(--text-secondary); margin: 0 0 0 1.5rem; line-height: 1.8;">
                 <li>Devolver os itens ao estoque</li>
                 <li>Remover os valores dos relatórios</li>
                 <li>Excluir permanentemente o pedido</li>
             </ul>
             
-            <div class="form-group">
-                <label class="form-label">Para confirmar, digite <strong style="color: var(--btn-primary);">EXCLUIR</strong> no campo abaixo:</label>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+                <label class="form-label" style="margin-bottom: 0 !important;">Para confirmar, digite <strong style="color: var(--btn-primary);">EXCLUIR</strong> no campo abaixo:</label>
                 <input 
                     type="text" 
                     id="confirmar-exclusao-input" 
@@ -890,7 +890,7 @@
             </div>
         </div>
         
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <div style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px !important;">
             <button onclick="fecharModalExcluirPedido()" class="btn-secondary">Cancelar</button>
             <button id="btn-confirmar-exclusao" onclick="confirmarExclusaoPedido()" class="btn-primary" disabled style="background: #dc3545; opacity: 0.5; cursor: not-allowed;">
                 🗑️ Excluir Pedido
@@ -1041,47 +1041,47 @@
             <input type="hidden" id="produto-id" value="">
             
             <!-- COLUNA ESQUERDA: INFORMAÇÕES -->
-            <div class="modal-produto-coluna-esquerda">
-                <div class="form-group">
-                    <label class="form-label">🍽️ Nome do Produto</label>
+            <div class="modal-produto-coluna-esquerda" style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label class="form-label" style="margin-bottom: 0 !important;">🍽️ Nome do Produto</label>
                     <input type="text" id="produto-nome" class="form-control" placeholder="Ex: X-Burger, Café Expresso..." required autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 
-                <div class="form-row-inline">
-                    <div class="form-group">
-                        <label class="form-label">💰 Preço (R$)</label>
+                <div class="form-row-inline" style="display: flex; gap: 16px;">
+                    <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
+                        <label class="form-label" style="margin-bottom: 0 !important;">💰 Preço (R$)</label>
                         <input type="number" id="produto-preco" class="form-control" placeholder="0.00" step="0.01" min="0" required>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">📦 Estoque/Qnt.</label>
+                    <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
+                        <label class="form-label" style="margin-bottom: 0 !important;">📦 Estoque/Qnt.</label>
                         <input type="number" id="produto-quantidade" class="form-control" placeholder="0" min="0" value="0">
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">📁 Categoria <span style="color: #e74c3c;">*</span></label>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label class="form-label" style="margin-bottom: 0 !important;">📁 Categoria <span style="color: #e74c3c;">*</span></label>
                     <select id="produto-categoria" class="form-control" required>
                         <option value="">Selecione uma categoria...</option>
                         <!-- Categorias serão carregadas via JavaScript -->
                     </select>
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label">⏱️ Tempo de Preparo (min) - Opcional</label>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label class="form-label" style="margin-bottom: 0 !important;">⏱️ Tempo de Preparo (min) - Opcional</label>
                     <input type="number" id="produto-tempo-preparo" class="form-control" placeholder="15" min="1" value="15">
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">📝 Descrição - Opcional</label>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label class="form-label" style="margin-bottom: 0 !important;">📝 Descrição - Opcional</label>
                     <input type="text" id="produto-descricao" class="form-control" placeholder="Descrição do produto...">
                 </div>
             </div>
 
             <!-- COLUNA DIREITA: IMAGEM E STATUS -->
-            <div class="modal-produto-coluna-direita">
-                <div class="form-group">
-                    <label class="form-label">🖼️ Imagem do Produto</label>
+            <div class="modal-produto-coluna-direita" style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label class="form-label" style="margin-bottom: 0 !important;">🖼️ Imagem do Produto</label>
                     <div class="produto-imagem-upload">
                         <input type="file" id="produto-imagem" accept="image/*" style="display: none;" onchange="previewImagemProduto(event)">
                         <div class="produto-imagem-preview" id="produto-imagem-preview" onclick="document.getElementById('produto-imagem').click()">
@@ -1094,7 +1094,7 @@
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
                     <label class="toggle-switch-label">
                         <input type="checkbox" id="produto-ativo" checked>
                         <span class="toggle-switch-text">✅ Produto disponível no cardápio</span>
@@ -1118,45 +1118,47 @@
         <div class="modal-categorias-container">
             <!-- COLUNA ESQUERDA: NOVA CATEGORIA -->
             <div class="categorias-coluna-esquerda">
-                <h3 class="categoria-section-title">➕ Nova Categoria</h3>
+                <h3 class="categoria-section-title" style="margin-bottom: 16px !important;">➕ Nova Categoria</h3>
                 
-                <div class="form-group">
-                    <label class="form-label">Nome da Categoria</label>
-                    <input type="text" id="nova-categoria-nome" class="form-control" placeholder="Ex: Lanches, Bebidas..." autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
-                </div>
-                
-                <div class="form-group" style="position: relative;">
-                    <label class="form-label">Emoji</label>
-                    <input type="text" id="nova-categoria-emoji" class="form-control" value="🍽️" readonly onclick="abrirSeletorEmoji()" style="text-align: center; font-size: 1.4rem; cursor: pointer;">
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label class="form-label" style="margin-bottom: 0 !important;">Nome da Categoria</label>
+                        <input type="text" id="nova-categoria-nome" class="form-control" placeholder="Ex: Lanches, Bebidas..." autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    </div>
                     
-                    <!-- Seletor de Emoji -->
-                    <div id="emoji-selector" style="display: none;">
-                        <div>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🍔')">🍔</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🍕')">🍕</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🌭')">🌭</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🥪')">🥪</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🌮')">🌮</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🍟')">🍟</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🍗')">🍗</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🥓')">🥓</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🍝')">🍝</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🍜')">🍜</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🍰')">🍰</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🧁')">🧁</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🍪')">🍪</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🍩')">🍩</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🍦')">🍦</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('☕')">☕</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🧃')">🧃</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🥤')">🥤</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🧋')">🧋</button>
-                            <button class="emoji-btn" onclick="selecionarEmoji('🍹')">🍹</button>
+                    <div style="display: flex; flex-direction: column; gap: 8px; position: relative;">
+                        <label class="form-label" style="margin-bottom: 0 !important;">Emoji</label>
+                        <input type="text" id="nova-categoria-emoji" class="form-control" value="🍽️" readonly onclick="abrirSeletorEmoji()" style="text-align: center; font-size: 1.4rem; cursor: pointer;">
+                        
+                        <!-- Seletor de Emoji -->
+                        <div id="emoji-selector" style="display: none;">
+                            <div>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🍔')">🍔</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🍕')">🍕</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🌭')">🌭</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🥪')">🥪</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🌮')">🌮</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🍟')">🍟</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🍗')">🍗</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🥓')">🥓</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🍝')">🍝</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🍜')">🍜</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🍰')">🍰</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🧁')">🧁</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🍪')">🍪</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🍩')">🍩</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🍦')">🍦</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('☕')">☕</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🧃')">🧃</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🥤')">🥤</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🧋')">🧋</button>
+                                <button class="emoji-btn" onclick="selecionarEmoji('🍹')">🍹</button>
+                            </div>
                         </div>
                     </div>
+                    
+                    <button onclick="salvarNovaCategoria()" class="btn-primary" style="width: 100%; padding: 0.6rem; font-size: 0.85rem; margin-top: 8px;">Adicionar Categoria</button>
                 </div>
-                
-                <button onclick="salvarNovaCategoria()" class="btn-primary" style="width: 100%; padding: 0.6rem; font-size: 0.85rem;">Adicionar Categoria</button>
             </div>
             
             <!-- COLUNA DIREITA: CATEGORIAS CADASTRADAS -->
@@ -1184,22 +1186,24 @@
             
             <!-- COLUNA ESQUERDA: INFORMAÇÕES DO COMBO -->
             <div class="combo-coluna-esquerda">
-                <h3 class="combo-section-title">ℹ️ Informações do Combo</h3>
+                <h3 class="combo-section-title" style="margin-bottom: 16px !important;">ℹ️ Informações do Combo</h3>
                 
-                <div class="form-group">
-                    <label class="form-label">🍽️ Nome do Combo</label>
-                    <input type="text" id="combo-nome" class="form-control" placeholder="Ex: Combo Pastel, Combo Super..." required autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">💰 Preço do Combo (R$)</label>
-                    <input type="number" id="combo-preco" class="form-control" placeholder="0.00" step="0.01" min="0" required>
-                </div>
-                
-                <div class="combo-info-box">
-                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0;">
-                        💡 O combo terá um preço fixo independente das escolhas do cliente.
-                    </p>
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label class="form-label" style="margin-bottom: 0 !important;">🍽️ Nome do Combo</label>
+                        <input type="text" id="combo-nome" class="form-control" placeholder="Ex: Combo Pastel, Combo Super..." required autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label class="form-label" style="margin-bottom: 0 !important;">💰 Preço do Combo (R$)</label>
+                        <input type="number" id="combo-preco" class="form-control" placeholder="0.00" step="0.01" min="0" required>
+                    </div>
+                    
+                    <div class="combo-info-box" style="margin-top: 8px;">
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0;">
+                            💡 O combo terá um preço fixo independente das escolhas do cliente.
+                        </p>
+                    </div>
                 </div>
             </div>
             

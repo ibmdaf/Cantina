@@ -433,7 +433,140 @@ ACOMPANHAMENTO
 
 ---
 
-## 📏 Padrões de Espaçamento em Formulários
+## 📏 Padrões de Espaçamento em Formulários e Modais
+
+### Sistema de Espaçamento Padronizado (8px/16px/24px)
+
+Todos os formulários e modais do sistema seguem um padrão consistente baseado em múltiplos de 8px:
+
+```
+┌─────────────────────────────────────────┐
+│                                         │
+│  Título do Modal/Formulário             │  ← 24px (margin-bottom)
+│                                         │
+│  ↓ Espaço entre título e primeiro campo│
+│                                         │
+│  Label do Campo                         │  ← 8px (gap)
+│  ↓ Espaço entre label e campo          │
+│  [______________]                       │
+│                                         │  ← 16px (gap entre campos)
+│  ↓ Espaço entre campos                 │
+│                                         │
+│  Próximo Label                          │  ← 8px (gap)
+│  ↓                                      │
+│  [______________]                       │
+│                                         │  ← 24px (margin-top)
+│  ↓ Espaço entre seção e botões         │
+│                                         │
+│  [Cancelar]  [Confirmar]                │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+### Escala de Espaçamento
+
+- **8px** - Micro espaçamento (label → campo)
+- **16px** - Espaçamento padrão (entre campos relacionados, entre colunas, entre botões)
+- **24px** - Separação de seções (título → conteúdo, conteúdo → botões, entre grupos)
+
+### Implementação CSS
+
+**Estrutura de Campos**:
+```css
+/* Container de campo com label e input */
+display: flex;
+flex-direction: column;
+gap: 8px; /* Label → Campo */
+
+/* Container de múltiplos campos */
+display: flex;
+flex-direction: column;
+gap: 16px; /* Entre campos */
+
+/* Título do modal/seção */
+margin-bottom: 24px !important;
+
+/* Botões de ação */
+margin-top: 24px !important;
+gap: 16px; /* Entre botões */
+```
+
+### Modais Padronizados
+
+✅ **Modal Novo Usuário**
+- Título → Primeiro campo: 24px
+- Label → Campo: 8px
+- Entre campos: 16px
+- Campos → Botões: 24px
+- Entre botões: 16px
+
+✅ **Modal Editar Usuário**
+- Título → Primeiro campo: 24px
+- Label → Campo: 8px
+- Entre campos: 16px
+- Campos → Botões: 24px
+- Entre botões: 16px
+
+✅ **Modal Novo Produto / Editar Produto**
+- Título → Primeiro campo: 24px
+- Label → Campo: 8px
+- Entre campos: 16px
+- Entre colunas: 16px (grid gap)
+- Campos → Botões: 24px
+- Entre botões: 16px
+
+✅ **Modal Categorias**
+- Título seção → Primeiro campo: 16px
+- Label → Campo: 8px
+- Entre campos: 16px
+- Campo → Botão: 8px
+- Entre colunas: 16px
+
+✅ **Modal Novo Combo / Editar Combo**
+- Título seção → Primeiro campo: 16px
+- Label → Campo: 8px
+- Entre campos: 16px
+- Campo → Info box: 8px
+- Entre colunas: 16px
+
+✅ **Modal Excluir Pedido**
+- Título → Conteúdo: 24px
+- Entre elementos de conteúdo: 16px
+- Label → Campo: 8px
+- Conteúdo → Botões: 24px
+- Entre botões: 16px
+
+✅ **Tela Novo Pedido**
+- Título → Primeiro campo: 24px
+- Label → Campo: 8px
+- Entre campos: 16px
+- Entre grupos: 24px
+- Entre colunas: 16px
+- Observações → Itens: 24px
+- Carrinho → Total: 24px
+- Total → Botão: 16px
+- Padding do card: 24px
+
+### Objetivo do Padrão
+
+O sistema de espaçamento foi projetado para:
+1. **Criar hierarquia visual clara** - Espaços maiores separam seções, menores associam elementos
+2. **Melhorar legibilidade** - Breathing room adequado entre elementos
+3. **Consistência em todo o sistema** - Mesma experiência em todos os modais e formulários
+4. **Facilitar manutenção** - Padrão documentado e fácil de aplicar
+5. **Evitar confusão** - Fica claro qual label pertence a qual campo
+
+### Regras de Aplicação
+
+1. **Sempre use `!important`** quando necessário para sobrescrever estilos globais
+2. **Use `margin-bottom: 0 !important`** em labels para controlar espaçamento via `gap`
+3. **Prefira `gap`** ao invés de margins individuais para espaçamento entre elementos
+4. **Use `flex-direction: column`** com `gap` para estruturas verticais
+5. **Mantenha consistência** - não invente novos valores de espaçamento
+
+---
+
+## 📏 Padrões de Espaçamento em Formulários (LEGADO - Substituído pelo padrão acima)
 
 ### Medidas Padrão
 
