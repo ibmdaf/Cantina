@@ -2432,6 +2432,38 @@
         min-height: 300px;
     }
 }
+
+/* Modais de usuário responsivos */
+#modal-novo-usuario .modal-content,
+#modal-editar-usuario .modal-content {
+    max-height: 85vh;
+    overflow-y: auto;
+    margin: 5vh auto;
+}
+
+@media (max-height: 800px) {
+    #modal-novo-usuario .modal-content,
+    #modal-editar-usuario .modal-content {
+        max-height: 90vh;
+        margin: 2vh auto;
+        padding: 1.5rem;
+    }
+}
+
+@media (max-height: 600px) {
+    #modal-novo-usuario .modal-content,
+    #modal-editar-usuario .modal-content {
+        max-height: 95vh;
+        margin: 1vh auto;
+        padding: 1rem;
+    }
+    
+    #modal-novo-usuario h2,
+    #modal-editar-usuario h2 {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+}
 </style>
 
 <style>
