@@ -2764,71 +2764,84 @@ body {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 10px;
-    padding: 24px; /* Padding interno do card principal */
+    padding: 24px !important; /* Padding interno do card principal */
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 0 !important;
 }
 
 .form-header {
-    margin-bottom: 24px; /* Espaçamento entre título e primeiro campo */
+    margin-bottom: 24px !important; /* Espaçamento entre título e primeiro campo */
 }
 
 .form-header h3 {
     color: var(--text-primary);
     font-size: 1.1rem;
-    margin: 0;
+    margin: 0 !important;
     font-weight: normal;
 }
 
 /* Espaçamento entre campos do formulário */
-.pedido-form-section .form-group {
-    margin-bottom: 16px;
+.pedido-form-section > .form-group {
+    margin-top: 0 !important;
+    margin-bottom: 16px !important;
+    gap: 8px !important; /* Espaçamento entre label e campo */
+}
+
+/* Primeiro campo após o título */
+.pedido-form-section > .form-group:first-of-type {
+    margin-top: 0 !important;
 }
 
 /* Espaçamento entre label e campo */
 .pedido-form-section .form-label {
-    margin-bottom: 8px;
+    margin-bottom: 0 !important; /* Controlado pelo gap do form-group */
 }
 
 /* Espaçamento entre grupos de campos (form-row) */
-.pedido-form-section .form-row {
-    margin-bottom: 24px;
-    gap: 16px; /* Espaçamento entre colunas */
+.pedido-form-section > .form-row {
+    margin-top: 0 !important;
+    margin-bottom: 24px !important; /* Espaçamento entre grupos */
+    gap: 16px !important; /* Espaçamento entre colunas */
 }
 
 .pedido-form-section .form-row .form-group {
-    margin-bottom: 0; /* Remove margin-bottom dos form-groups dentro de form-row */
+    margin-top: 0 !important;
+    margin-bottom: 0 !important; /* Remove margin-bottom dos form-groups dentro de form-row */
+    gap: 8px !important;
 }
 
-/* Espaçamento entre campo Observações e seção Itens */
-.pedido-form-section > .form-group:last-of-type {
-    margin-bottom: 24px;
+/* Campo Observações (último form-group antes da seção Itens) */
+.pedido-form-section > .form-group:nth-last-of-type(1) {
+    margin-bottom: 24px !important; /* Espaçamento entre Observações e seção Itens */
 }
 
 /* Seção de Itens */
-.itens-section {
-    margin-bottom: 0;
+.pedido-form-section > .itens-section {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 .itens-header {
-    margin-bottom: 16px; /* Espaçamento entre título "Itens" e área do carrinho */
+    margin-bottom: 0 !important; /* Sem margem, o padding do header já cria o espaço */
 }
 
 /* Área do carrinho */
 .lista-itens-pedido {
-    padding: 24px; /* Padding interno do card de itens */
-    margin-bottom: 24px; /* Espaçamento entre carrinho e total */
+    padding: 24px !important; /* Padding interno do card de itens */
+    margin-bottom: 0 !important;
 }
 
 /* Área de total */
-.total-pedido-section {
-    margin-bottom: 16px; /* Espaçamento entre total e botão */
+.pedido-form-section > .total-pedido-section {
+    margin-top: 24px !important; /* Espaçamento entre carrinho e total */
+    margin-bottom: 16px !important; /* Espaçamento entre total e botão */
 }
 
 /* Botão Finalizar Pedido */
-.btn-finalizar-pedido-full {
-    margin-top: 0;
+.pedido-form-section > .btn-finalizar-pedido-full {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
 }
 .form-row {
     display: grid;
