@@ -33,27 +33,22 @@
 
                     <div class="produtos-cardapio-grid">
                         {% for produto in produtos %}
-                        <div class="produto-card-cardapio {% if not produto.is_combo and produto.quantidade_estoque == 0 %}produto-sem-estoque{% endif %}" 
+                        <div class="produto-card-cardapio" 
                              data-nome="{{ produto.nome|lower }}" 
                              data-codigo="{{ produto.id }}"
                              data-categoria="{% if produto.categoria %}{{ produto.categoria.nome }}{% endif %}"
                              data-is-combo="{% if produto.is_combo %}true{% else %}false{% endif %}"
                              data-estoque="{{ produto.quantidade_estoque }}"
-                             onclick="{% if produto.is_combo or produto.quantidade_estoque > 0 %}{% if produto.is_combo %}abrirModalSelecaoCombo({{ produto.get_combo_id }}, '{{ produto.nome|escapejs }}', {{ produto.preco }}){% else %}adicionarProduto({{ produto.id }}, '{{ produto.nome }}', {{ produto.preco }}){% endif %}{% else %}mostrarAlertaSemEstoque('{{ produto.nome|escapejs }}'){% endif %}">
+                             onclick="{% if produto.is_combo %}abrirModalSelecaoCombo({{ produto.get_combo_id }}, '{{ produto.nome|escapejs }}', {{ produto.preco }}){% else %}adicionarProduto({{ produto.id }}, '{{ produto.nome }}', {{ produto.preco }}){% endif %}">
                             <div class="produto-card-info">
                                 <h4>{% if produto.is_combo %}🎁 {% endif %}{{ produto.nome }}</h4>
                                 <span class="produto-codigo">#{{ produto.id|stringformat:"03d" }}</span>
                             </div>
                             <div class="produto-card-preco">R$ {{ produto.preco }}</div>
                             {% if not produto.is_combo %}
-                            <span class="produto-badge-estoque {% if produto.quantidade_estoque == 0 %}estoque-zero{% endif %}" data-produto-id="{{ produto.id }}">
+                            <span class="produto-badge-estoque" data-produto-id="{{ produto.id }}">
                                 {{ produto.quantidade_estoque }} un
                             </span>
-                            {% endif %}
-                            {% if not produto.is_combo and produto.quantidade_estoque == 0 %}
-                            <div class="produto-indisponivel-overlay">
-                                <span>❌ Indisponível</span>
-                            </div>
                             {% endif %}
                         </div>
                         {% endfor %}
@@ -5294,7 +5289,7 @@ input:checked + .toggle-slider:before {
 {% endblock %}
 
 {% block extra_js %}
-<script src="/static/js/caixa.js"></script>
+<script src="/static/js/caixa.js?v={{ request.GET.t|default:'1' }}"></script>
 <script>
 // Função showTab - Troca de abas sem reload (mantém fullscreen)
 function showTab(tabName) {
@@ -5328,6 +5323,17 @@ function showTab(tabName) {
     const selectedButton = document.querySelector(`.tab-btn[onclick*="${tabName}"]`);
     if (selectedButton) {
         selectedButton.classList.add('active');
+    }
+    
+    // Verificar se há produtos em cache para atualizar (quando muda para aba novo-pedido)
+    if (tabName === 'novo-pedido') {
+        const produtosCache = sessionStorage.getItem('produtos_cache');
+        if (produtosCache) {
+            console.log('🔄 [CACHE] Produtos em cache detectados, atualizando grid...');
+            setTimeout(() => {
+                recarregarProdutosNovoPedido();
+            }, 100);
+        }
     }
     
     // Atualizar URL sem reload (History API)
@@ -5614,10 +5620,6 @@ async function publicarAlteracoesCardapio() {
             }
         }
         
-        console.log('Recarregando produtos na aba Novo Pedido...');
-        // Recarregar produtos na aba Novo Pedido
-        await recarregarProdutosNovoPedido();
-        
         // Notificar outras abas/telas para atualizar (via localStorage)
         console.log('Notificando outras telas para atualizar...');
         const notificacao = {
@@ -5635,15 +5637,14 @@ async function publicarAlteracoesCardapio() {
         mudancasCardapioPendentes = false;
         mudancasCardapio = { disponibilidade: {}, estoque: {} };
         
-        const btnPublicar = document.getElementById('btn-publicar-cardapio');
-        if (btnPublicar) {
-            btnPublicar.disabled = true;
-            btnPublicar.style.opacity = '0.5';
-            btnPublicar.style.cursor = 'not-allowed';
-        }
-        
         console.log('Publicação concluída com sucesso!');
         showToast('✅ Alterações publicadas com sucesso!', 'success');
+        
+        // Recarregar a página após 500ms para garantir atualização
+        console.log('🔄 Recarregando página em 500ms...');
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
         
     } catch (error) {
         console.error('Erro ao publicar alterações:', error);
@@ -5845,6 +5846,15 @@ function criarCardPedido(pedido) {
                 </div>
             `;
             
+            // Se tiver observações, adicionar
+            if (item.observacoes && item.observacoes.trim() !== '') {
+                itensHTML += `
+                    <div class="pedido-item-linha" style="margin-left: 1rem; font-size: 0.8rem; color: var(--text-secondary); font-style: italic;">
+                        <span class="item-descricao">💬 ${item.observacoes}</span>
+                    </div>
+                `;
+            }
+            
             // Se for combo, adicionar escolhas
             if (item.is_combo && item.escolhas && item.escolhas.length > 0) {
                 item.escolhas.forEach(escolha => {
@@ -5877,6 +5887,12 @@ function criarCardPedido(pedido) {
         
         <div class="pedido-itens-lista">
             ${itensHTML}
+            ${pedido.observacoes && pedido.observacoes.trim() !== '' ? `
+                <div style="margin-top: 0.8rem; padding: 0.6rem; background: rgba(244, 162, 58, 0.1); border-left: 3px solid var(--accent-color); border-radius: 4px;">
+                    <div style="font-size: 0.75rem; color: var(--accent-color); font-weight: 600; margin-bottom: 0.3rem;">💬 OBSERVAÇÕES DO PEDIDO:</div>
+                    <div style="font-size: 0.85rem; color: var(--text-primary); font-style: italic;">${pedido.observacoes}</div>
+                </div>
+            ` : ''}
             <div class="pedido-item-linha pedido-total-linha">
                 <span class="item-descricao">💰 Total:</span>
                 <span class="item-valor-total">R$ ${pedido.total}</span>
@@ -6009,6 +6025,33 @@ function atualizarCronometrosLocal() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Iniciando polling de pedidos ativos');
     
+    // Verificar se há QR Code pendente para reabrir após reload
+    const qrcodePendente = localStorage.getItem('qrcode_pendente');
+    if (qrcodePendente) {
+        try {
+            const dados = JSON.parse(qrcodePendente);
+            console.log('📱 [QRCODE] QR Code pendente encontrado:', dados);
+            
+            // Verificar se não é muito antigo (máximo 10 segundos)
+            const idade = Date.now() - dados.timestamp;
+            if (idade < 10000) {
+                console.log('📱 [QRCODE] Reabrindo modal do QR Code...');
+                // Aguardar um pouco para garantir que a página carregou
+                setTimeout(() => {
+                    mostrarQRCode(dados.qr_code);
+                }, 300);
+            } else {
+                console.log('📱 [QRCODE] QR Code muito antigo, ignorando');
+            }
+            
+            // Limpar do localStorage
+            localStorage.removeItem('qrcode_pendente');
+        } catch (error) {
+            console.error('❌ [QRCODE] Erro ao processar QR Code pendente:', error);
+            localStorage.removeItem('qrcode_pendente');
+        }
+    }
+    
     // Inicializar contador de itens disponíveis no cardápio
     inicializarContadorPedido();
     
@@ -6033,6 +6076,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 recarregarProdutosNovoPedido();
             } catch (error) {
                 console.error('Erro ao processar notificação de cardápio no caixa:', error);
+            }
+        }
+        
+        // Listener para atualização de estoque após pedido finalizado
+        if (e.key === 'estoque_atualizado' && e.newValue) {
+            try {
+                const evento = JSON.parse(e.newValue);
+                console.log('📦 [STORAGE] Estoque atualizado após pedido:', evento);
+                console.log('📦 [STORAGE] Timestamp do evento:', evento.timestamp);
+                
+                // Atualizar aba Novo Pedido
+                console.log('📦 [STORAGE] Verificando função recarregarProdutosNovoPedido...');
+                if (typeof recarregarProdutosNovoPedido === 'function') {
+                    console.log('✅ [STORAGE] Função encontrada, executando...');
+                    recarregarProdutosNovoPedido();
+                } else {
+                    console.error('❌ [STORAGE] Função recarregarProdutosNovoPedido não encontrada!');
+                }
+                
+                // Atualizar aba Cardápio do Dia (tabela de estoque)
+                console.log('📦 [STORAGE] Verificando função atualizarTabelaCardapio...');
+                if (typeof atualizarTabelaCardapio === 'function') {
+                    console.log('✅ [STORAGE] Função encontrada, executando...');
+                    atualizarTabelaCardapio();
+                } else {
+                    console.warn('⚠️ [STORAGE] Função atualizarTabelaCardapio não encontrada');
+                }
+            } catch (error) {
+                console.error('❌ [STORAGE] Erro ao processar atualização de estoque:', error);
             }
         }
     });
@@ -6626,14 +6698,11 @@ function filtrarCardapio() {
     const cards = document.querySelectorAll('.produto-card-cardapio');
     
     let visibleCount = 0;
-    let availableCount = 0;
     
     cards.forEach(card => {
         const nome = card.dataset.nome || '';
         const codigo = card.dataset.codigo || '';
         const categoria = card.dataset.categoria || '';
-        const estoque = parseInt(card.dataset.estoque || '0');
-        const isCombo = card.dataset.isCombo === 'true';
         
         const matchBusca = nome.includes(busca) || codigo.includes(busca);
         const matchCategoria = !categoriaFiltro || categoria.toLowerCase() === categoriaFiltro;
@@ -6641,19 +6710,15 @@ function filtrarCardapio() {
         if (matchBusca && matchCategoria) {
             card.style.display = '';
             visibleCount++;
-            // Contar apenas produtos com estoque ou combos
-            if (isCombo || estoque > 0) {
-                availableCount++;
-            }
         } else {
             card.style.display = 'none';
         }
     });
     
-    // Atualizar contador com produtos disponíveis (com estoque)
+    // Atualizar contador
     const counter = document.getElementById('items-count-pedido');
     if (counter) {
-        counter.textContent = `${availableCount} ${availableCount === 1 ? 'item disponível' : 'itens disponíveis'}`;
+        counter.textContent = `${visibleCount} ${visibleCount === 1 ? 'item disponível' : 'itens disponíveis'}`;
     }
 }
 
@@ -6663,47 +6728,51 @@ function inicializarContadorPedido() {
     const counter = document.getElementById('items-count-pedido');
     
     if (counter && cards.length > 0) {
-        // Contar apenas produtos com estoque ou combos
-        let availableCount = 0;
-        cards.forEach(card => {
-            const estoque = parseInt(card.dataset.estoque || '0');
-            const isCombo = card.dataset.isCombo === 'true';
-            if (isCombo || estoque > 0) {
-                availableCount++;
-            }
-        });
-        counter.textContent = `${availableCount} ${availableCount === 1 ? 'item disponível' : 'itens disponíveis'}`;
+        counter.textContent = `${cards.length} ${cards.length === 1 ? 'item disponível' : 'itens disponíveis'}`;
     }
-}
-
-// Mostrar alerta quando clicar em produto sem estoque
-function mostrarAlertaSemEstoque(nomeProduto) {
-    showToast(`❌ ${nomeProduto} está sem estoque no momento`, 'error');
 }
 
 async function recarregarProdutosNovoPedido() {
     try {
-        console.log('Recarregando produtos na aba Novo Pedido...');
+        console.log('🔄 [RELOAD] Iniciando recarga de produtos...');
         const empresaId = {{ user.empresa.id }};
-        const response = await fetch(`/caixa/api/produtos-disponiveis/${empresaId}/`);
+        const url = `/caixa/api/produtos-disponiveis/${empresaId}/`;
+        console.log('🔄 [RELOAD] URL da API:', url);
+        
+        const response = await fetch(url);
         const data = await response.json();
         
-        console.log('Resposta da API:', data);
+        console.log('🔄 [RELOAD] Resposta da API:', data);
+        console.log('🔄 [RELOAD] Total de produtos:', data.produtos ? data.produtos.length : 0);
         
         if (data.success && data.produtos) {
             const grid = document.querySelector('.produtos-cardapio-grid');
             if (!grid) {
-                console.warn('Grid de produtos não encontrado');
+                console.warn('⚠️ [RELOAD] Grid de produtos não encontrado (pode estar em outra aba)');
+                console.log('🔄 [RELOAD] Salvando produtos no cache para atualização posterior...');
+                
+                // Salvar produtos no sessionStorage para atualizar quando mudar de aba
+                sessionStorage.setItem('produtos_cache', JSON.stringify(data.produtos));
                 return;
             }
             
+            console.log('🔄 [RELOAD] Limpando grid...');
             grid.innerHTML = '';
             
-            data.produtos.forEach(produto => {
+            // Filtrar produtos com estoque > 0 ou combos
+            const produtosFiltrados = data.produtos.filter(p => {
+                return p.is_combo || p.quantidade_estoque > 0;
+            });
+            
+            console.log('🔄 [RELOAD] Produtos após filtro de estoque:', produtosFiltrados.length);
+            
+            produtosFiltrados.forEach(produto => {
+                console.log(`🔄 [RELOAD] Adicionando produto: ${produto.nome} (Estoque: ${produto.quantidade_estoque})`);
                 const card = document.createElement('div');
                 card.className = 'produto-card-cardapio';
                 card.dataset.nome = produto.nome.toLowerCase();
                 card.dataset.codigo = produto.id;
+                card.dataset.estoque = produto.quantidade_estoque;
                 card.dataset.categoria = produto.categoria ? produto.categoria.nome : '';
                 card.dataset.isCombo = produto.is_combo ? 'true' : 'false';
                 
@@ -6723,13 +6792,15 @@ async function recarregarProdutosNovoPedido() {
                         <span class="produto-codigo">#${String(produto.id).padStart(3, '0')}</span>
                     </div>
                     <div class="produto-card-preco">R$ ${parseFloat(produto.preco).toFixed(2)}</div>
-                    ${produto.quantidade_estoque > 0 && !produto.is_combo ? 
-                        `<span class="produto-badge-estoque" data-produto-id="${produto.id}" style="display: none;">${produto.quantidade_estoque} un</span>` 
+                    ${!produto.is_combo ? 
+                        `<span class="produto-badge-estoque" data-produto-id="${produto.id}">${produto.quantidade_estoque} un</span>` 
                         : ''}
                 `;
                 
                 grid.appendChild(card);
             });
+            
+            console.log('✅ [RELOAD] Grid atualizado com', produtosFiltrados.length, 'produtos');
             
             // Restaurar estado dos badges de estoque
             restaurarEstadoMostrarEstoque();
@@ -6737,9 +6808,15 @@ async function recarregarProdutosNovoPedido() {
             // Aplicar filtros atuais
             filtrarCardapio();
             
-            console.log('Produtos recarregados com sucesso!');
+            // Atualizar contador
+            inicializarContadorPedido();
+            
+            // Limpar cache após atualização bem-sucedida
+            sessionStorage.removeItem('produtos_cache');
+            
+            console.log('✅ [RELOAD] Produtos recarregados com sucesso!');
         } else {
-            console.error('Erro na resposta da API:', data);
+            console.error('❌ [RELOAD] Erro na resposta da API:', data);
         }
     } catch (error) {
         console.error('Erro ao recarregar produtos:', error);
@@ -6771,6 +6848,38 @@ function toggleMostrarEstoque(checkbox) {
     
     if (badge) {
         badge.style.display = mostrar ? 'block' : 'none';
+    }
+}
+
+// Atualizar tabela de estoque após mudança
+async function atualizarTabelaCardapio() {
+    try {
+        console.log('🔄 Atualizando tabelas após mudança de estoque...');
+        
+        // Buscar dados atualizados dos produtos
+        const empresaId = {{ user.empresa.id }};
+        const response = await fetch(`/caixa/api/produtos-disponiveis/${empresaId}/`);
+        const data = await response.json();
+        
+        if (data.success && data.produtos) {
+            // Atualizar tabela de estoque (aba Estoque)
+            const tabelaEstoque = document.getElementById('tabela-estoque');
+            if (tabelaEstoque) {
+                data.produtos.forEach(produto => {
+                    const row = tabelaEstoque.querySelector(`tr[data-produto-id="${produto.id}"]`);
+                    if (row) {
+                        const estoqueCell = row.querySelector('.badge-quantidade-tabela');
+                        if (estoqueCell) {
+                            estoqueCell.textContent = `${produto.quantidade_estoque} un`;
+                        }
+                    }
+                });
+            }
+            
+            console.log('✅ Tabelas atualizadas');
+        }
+    } catch (error) {
+        console.error('❌ Erro ao atualizar tabelas:', error);
     }
 }
 
@@ -8714,16 +8823,101 @@ async function confirmarSelecaoCombo() {
 }
 
 function adicionarComboAoCarrinho(combo) {
-    // Adicionar combo ao array de itens do pedido
-    itensPedido.push({
-        produto_id: combo.produto_id,  // ID do produto, não do combo
-        nome: combo.nome,
-        preco: parseFloat(combo.preco),
-        quantidade: 1,
-        is_combo: true,
-        escolhas: combo.escolhas,
-        observacoes: ''
-    });
+    // Verificar se já existe este combo no carrinho
+    const comboExistente = itensPedido.find(item => 
+        item.is_combo && 
+        item.produto_id === combo.produto_id &&
+        JSON.stringify(item.escolhas) === JSON.stringify(combo.escolhas)
+    );
+    
+    if (comboExistente) {
+        // Verificar estoque antes de aumentar quantidade
+        let podeAdicionar = true;
+        let mensagemErro = '';
+        
+        for (const escolha of combo.escolhas) {
+            const estoqueDisponivel = obterEstoqueProduto(escolha.produto_id);
+            const quantidadeNecessaria = escolha.quantidade_abate * (comboExistente.quantidade + 1);
+            
+            // Calcular quanto já está sendo usado por outros itens
+            let quantidadeUsada = 0;
+            itensPedido.forEach(outroItem => {
+                if (outroItem === comboExistente) return; // Pular o item atual
+                
+                if (outroItem.is_combo) {
+                    outroItem.escolhas.forEach(outraEscolha => {
+                        if (outraEscolha.produto_id === escolha.produto_id) {
+                            quantidadeUsada += outraEscolha.quantidade_abate * outroItem.quantidade;
+                        }
+                    });
+                } else if (outroItem.produto_id === escolha.produto_id) {
+                    quantidadeUsada += outroItem.quantidade;
+                }
+            });
+            
+            const estoqueRestante = estoqueDisponivel - quantidadeUsada;
+            
+            if (quantidadeNecessaria > estoqueRestante) {
+                podeAdicionar = false;
+                mensagemErro = `❌ Estoque insuficiente!\n\n${escolha.produto_nome}\nDisponível: ${estoqueRestante} unidade(s)\nNecessário: ${quantidadeNecessaria} unidade(s)`;
+                break;
+            }
+        }
+        
+        if (!podeAdicionar) {
+            alert(mensagemErro);
+            return;
+        }
+        
+        comboExistente.quantidade++;
+    } else {
+        // Verificar estoque antes de adicionar novo combo
+        let podeAdicionar = true;
+        let mensagemErro = '';
+        
+        for (const escolha of combo.escolhas) {
+            const estoqueDisponivel = obterEstoqueProduto(escolha.produto_id);
+            const quantidadeNecessaria = escolha.quantidade_abate;
+            
+            // Calcular quanto já está sendo usado por outros itens
+            let quantidadeUsada = 0;
+            itensPedido.forEach(item => {
+                if (item.is_combo) {
+                    item.escolhas.forEach(outraEscolha => {
+                        if (outraEscolha.produto_id === escolha.produto_id) {
+                            quantidadeUsada += outraEscolha.quantidade_abate * item.quantidade;
+                        }
+                    });
+                } else if (item.produto_id === escolha.produto_id) {
+                    quantidadeUsada += item.quantidade;
+                }
+            });
+            
+            const estoqueRestante = estoqueDisponivel - quantidadeUsada;
+            
+            if (quantidadeNecessaria > estoqueRestante) {
+                podeAdicionar = false;
+                mensagemErro = `❌ Estoque insuficiente!\n\n${escolha.produto_nome}\nDisponível: ${estoqueRestante} unidade(s)\nNecessário: ${quantidadeNecessaria} unidade(s)`;
+                break;
+            }
+        }
+        
+        if (!podeAdicionar) {
+            alert(mensagemErro);
+            return;
+        }
+        
+        // Adicionar novo combo ao array de itens do pedido
+        itensPedido.push({
+            produto_id: combo.produto_id,  // ID do produto, não do combo
+            nome: combo.nome,
+            preco: parseFloat(combo.preco),
+            quantidade: 1,
+            is_combo: true,
+            escolhas: combo.escolhas,
+            observacoes: ''
+        });
+    }
     
     atualizarListaItens();
 }
