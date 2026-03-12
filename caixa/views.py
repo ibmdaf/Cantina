@@ -28,11 +28,13 @@ def caixa_dashboard(request, aba='novo-pedido'):
     todos_produtos_raw = Produto.objects.filter(empresa=empresa).select_related('categoria')
     todos_produtos = ordenar_produtos_customizado(todos_produtos_raw)
     
-    # Apenas produtos ativos para venda na aba "Novo Pedido"
-    # Mostrar todos os produtos ativos, independente do estoque
+    # Apenas produtos ativos E com estoque para venda na aba "Novo Pedido"
+    # Combos não precisam de estoque próprio (usam estoque dos componentes)
     produtos_disponiveis_raw = Produto.objects.filter(
         empresa=empresa, 
         ativo=True
+    ).filter(
+        Q(quantidade_estoque__gt=0) | Q(combo__isnull=False)
     ).select_related('categoria')
     produtos_disponiveis = ordenar_produtos_customizado(produtos_disponiveis_raw)
     
@@ -180,6 +182,37 @@ def criar_pedido(request):
                         'success': False,
                         'error': f'Produto com ID {item["produto_id"]} não encontrado. Por favor, atualize a página.'
                     })
+                
+                # VALIDAÇÃO DE ESTOQUE - Verificar se há estoque suficiente
+                quantidade_solicitada = item['quantidade']
+                
+                # Se for combo, validar estoque dos componentes
+                if item.get('is_combo') and item.get('escolhas'):
+                    for escolha in item['escolhas']:
+                        try:
+                            produto_escolhido = Produto.objects.get(id=escolha['produto_id'])
+                            quantidade_necessaria = int(escolha['quantidade_abate']) * quantidade_solicitada
+                            
+                            if produto_escolhido.quantidade_estoque < quantidade_necessaria:
+                                pedido.delete()
+                                return JsonResponse({
+                                    'success': False,
+                                    'error': f'Estoque insuficiente!\n\n{produto_escolhido.nome}\nDisponível: {produto_escolhido.quantidade_estoque} unidade(s)\nNecessário: {quantidade_necessaria} unidade(s)'
+                                })
+                        except Produto.DoesNotExist:
+                            pedido.delete()
+                            return JsonResponse({
+                                'success': False,
+                                'error': f'Produto do combo não encontrado. Por favor, atualize a página.'
+                            })
+                else:
+                    # Produto normal - validar estoque
+                    if produto.quantidade_estoque < quantidade_solicitada:
+                        pedido.delete()
+                        return JsonResponse({
+                            'success': False,
+                            'error': f'Estoque insuficiente!\n\n{produto.nome}\nDisponível: {produto.quantidade_estoque} unidade(s)\nSolicitado: {quantidade_solicitada} unidade(s)'
+                        })
                 
                 item_pedido = ItemPedido.objects.create(
                     pedido=pedido,
@@ -1220,6 +1253,7 @@ def api_pedidos_ativos(request):
                 'produto_nome': item.produto.nome,
                 'preco_unitario': str(item.preco_unitario),
                 'subtotal': str(item.subtotal),
+                'observacoes': item.observacoes or '',
                 'is_combo': item.produto.is_combo()
             }
             
@@ -1246,6 +1280,7 @@ def api_pedidos_ativos(request):
             'status': pedido.status,
             'status_display': pedido.get_status_display(),
             'forma_pagamento': pedido.get_forma_pagamento_display() if pedido.forma_pagamento else 'Não informado',
+            'observacoes': pedido.observacoes or '',
             'total': str(pedido.total),
             'total_itens': total_itens,
             'tempo_decorrido': int(tempo_decorrido),
